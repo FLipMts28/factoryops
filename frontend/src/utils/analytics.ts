@@ -51,22 +51,49 @@ export const getStatusPercentage = (machines: Machine[], status: MachineStatus):
 };
 
 // Mock data generator for realistic metrics
-export const generateMockMetrics = (machineId: string, machineName: string): MachineMetrics => {
-  const availability = 75 + Math.random() * 20; // 75-95%
-  const performance = 80 + Math.random() * 15; // 80-95%
-  const quality = 95 + Math.random() * 4; // 95-99%
+export const generateMockMetrics = (
+  machineId: string, 
+  machineName: string,
+  dateRange?: { start: Date; end: Date }
+): MachineMetrics => {
+  // Calcular número de dias no período
+  const days = dateRange 
+    ? Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24))
+    : 7;
+  
+  // Ajustar métricas baseado no período (períodos mais longos = mais variação)
+  const periodFactor = Math.min(days / 7, 2); // máximo 2x de variação
+  
+  // Base seed para consistência (mesma máquina = mesmos valores base)
+  const seed = machineId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const random = (min: number, max: number, index: number = 0) => {
+    const x = Math.sin(seed + index) * 10000;
+    return min + (x - Math.floor(x)) * (max - min);
+  };
+  
+  const availability = 75 + random(0, 20, 1) * periodFactor; // 75-95%
+  const performance = 80 + random(0, 15, 2); // 80-95%
+  const quality = 95 + random(0, 4, 3); // 95-99%
+  
+  // Períodos mais longos = mais downtime e falhas
+  const totalDowntime = random(0, 120, 4) * periodFactor; // minutos
+  const failureCount = Math.floor(random(0, 5, 5) * periodFactor);
   
   return {
     machineId,
     machineName,
-    availability,
-    performance,
-    quality,
-    oee: calculateOEE(availability, performance, quality),
-    mtbf: 100 + Math.random() * 150, // 100-250 hours
-    mttr: 2 + Math.random() * 8, // 2-10 hours
-    totalDowntime: Math.random() * 120, // 0-120 minutes
-    failureCount: Math.floor(Math.random() * 5),
+    availability: Math.min(availability, 99),
+    performance: Math.min(performance, 99),
+    quality: Math.min(quality, 99.9),
+    oee: calculateOEE(
+      Math.min(availability, 99), 
+      Math.min(performance, 99), 
+      Math.min(quality, 99.9)
+    ),
+    mtbf: 20 + random(0, 180, 6), // 20-200 hours (valores mais realistas)
+    mttr: 2 + random(0, 8, 7), // 2-10 hours
+    totalDowntime,
+    failureCount,
   };
 };
 

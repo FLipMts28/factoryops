@@ -38,7 +38,7 @@ export const AnalyticsDashboard = () => {
         fetchTimeSeriesData(filteredMachines[0].id);
       }
     }
-  }, [machines, selectedLineId]);
+  }, [machines, selectedLineId, dateRange]);
 
   const filteredMachines = selectedLineId 
     ? machines.filter(m => m.productionLineId === selectedLineId)
@@ -77,10 +77,15 @@ export const AnalyticsDashboard = () => {
     ? machineMetrics.reduce((sum, m) => sum + m.mttr, 0) / machineMetrics.length
     : 0;
 
-  const estimatedRevenueLoss = totalDowntime * 150;
-  const maintenanceCost = totalFailures * 2500;
-  const potentialSavings = estimatedRevenueLoss * 0.3;
-  const roi = ((potentialSavings - maintenanceCost) / maintenanceCost) * 100;
+  // Cálculos financeiros ajustados
+  const estimatedRevenueLoss = totalDowntime * 50; // €50/hora de downtime (mais realista)
+  const maintenanceCost = totalFailures * 1200; // €1200 por falha (mais realista)
+  const potentialSavings = estimatedRevenueLoss * 0.25; // 25% de poupança potencial
+  
+  // Evitar divisão por zero e limitar ROI a valores realistas
+  const roi = maintenanceCost > 0 
+    ? Math.max(-100, Math.min(100, ((potentialSavings - maintenanceCost) / Math.max(maintenanceCost, 1)) * 100))
+    : 0;
 
   const statusData = [
     { status: MachineStatus.NORMAL, count: normalCount },

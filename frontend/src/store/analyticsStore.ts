@@ -64,14 +64,22 @@ export const useAnalyticsStore = create<AnalyticsStore>((set, get) => ({
   fetchTimeSeriesData: async (machineId: string) => {
     set({ isLoading: true });
     try {
+      const { dateRange } = get();
       const data: TimeSeriesData[] = [];
-      const now = new Date();
       
-      for (let i = 24; i >= 0; i--) {
-        const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
+      // Calcular número de pontos baseado no período
+      const days = Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24));
+      const points = Math.min(days * 24, 168); // Máximo 7 dias de dados horários
+      const interval = (dateRange.end.getTime() - dateRange.start.getTime()) / points;
+      
+      for (let i = 0; i <= points; i++) {
+        const timestamp = new Date(dateRange.start.getTime() + i * interval);
+        // Gerar valores com variação realista
+        const baseValue = 70;
+        const variation = Math.sin(i / 10) * 15 + Math.random() * 10;
         data.push({
           timestamp: timestamp.toISOString(),
-          value: 60 + Math.random() * 30,
+          value: Math.max(40, Math.min(95, baseValue + variation)),
         });
       }
       
@@ -84,7 +92,8 @@ export const useAnalyticsStore = create<AnalyticsStore>((set, get) => ({
   },
 
   generateMetricsForMachines: (machines) => {
-    const metrics = machines.map(m => generateMockMetrics(m.id, m.name));
+    const { dateRange } = get();
+    const metrics = machines.map(m => generateMockMetrics(m.id, m.name, dateRange));
     set({ machineMetrics: metrics });
   },
 }));
