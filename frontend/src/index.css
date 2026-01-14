@@ -1,0 +1,502 @@
+/* frontend/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   TEMA BASE - Dark/Light Mode
+   ============================================ */
+@layer base {
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Dark Theme Background */
+  html.dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    background-attachment: fixed;
+    color-scheme: dark;
+  }
+  
+  /* Light Theme Background */
+  html.light {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+    background-attachment: fixed;
+    color-scheme: light;
+  }
+  
+  body {
+    @apply m-0 p-0;
+    min-height: 100vh;
+    background: transparent;
+    transition: color 0.3s ease;
+  }
+
+  /* Text colors base */
+  html.dark body {
+    @apply text-gray-100;
+  }
+
+  html.light body {
+    @apply text-gray-900;
+  }
+
+  #root {
+    min-height: 100vh;
+    background: transparent;
+  }
+}
+
+/* ============================================
+   CSS VARIABLES
+   ============================================ */
+:root {
+  /* Status colors - constantes */
+  --color-normal: #10b981;
+  --color-warning: #f59e0b;
+  --color-failure: #ef4444;
+  --color-maintenance: #3b82f6;
+  
+  /* Dark theme defaults */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+}
+
+html.light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+}
+
+/* ============================================
+   ELEMENTOS QUE IGNORAM O TEMA (SEMPRE ESCUROS)
+   Usar classe "dark-element" no componente
+   ============================================ */
+.dark-element {
+  background: linear-gradient(to right, #1f2937, #111827) !important;
+  border-color: #374151 !important;
+}
+
+.dark-element * {
+  color: #ffffff !important;
+}
+
+.dark-element svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.dark-element .border-gray-700 {
+  border-color: #374151 !important;
+}
+
+.dark-element .hover\:bg-gray-700\/50:hover {
+  background-color: rgba(55, 65, 81, 0.5) !important;
+}
+
+/* ============================================
+   HEADERS AZUIS - SEMPRE TEXTO BRANCO
+   Usar classe "blue-header" no componente
+   ============================================ */
+.blue-header,
+.blue-header *,
+.blue-header h1,
+.blue-header h2,
+.blue-header h3,
+.blue-header h4,
+.blue-header p,
+.blue-header span,
+.blue-header div {
+  /* Reset any color overrides */
+}
+
+.blue-header .text-white,
+.blue-header h1,
+.blue-header h2,
+.blue-header h3 {
+  color: #ffffff !important;
+}
+
+.blue-header .text-blue-100,
+.blue-header p {
+  color: #dbeafe !important;
+}
+
+.blue-header .text-4xl,
+.blue-header .text-3xl,
+.blue-header .text-2xl,
+.blue-header .text-xl {
+  color: #ffffff !important;
+}
+
+.blue-header .font-bold {
+  color: #ffffff !important;
+}
+
+.blue-header .text-sm {
+  color: #dbeafe !important;
+}
+
+/* ============================================
+   UTILITÁRIOS DE TEMA
+   ============================================ */
+@layer utilities {
+  /* Card backgrounds */
+  .bg-card {
+    background: var(--bg-card);
+  }
+  
+  /* Gradient cards */
+  .bg-gradient-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  
+  html.light .bg-gradient-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Theme-aware text */
+  .text-theme-primary {
+    color: var(--text-primary);
+  }
+  
+  .text-theme-secondary {
+    color: var(--text-secondary);
+  }
+  
+  /* Theme-aware borders */
+  .border-theme {
+    border-color: var(--border-color);
+  }
+}
+
+/* ============================================
+   COMPONENTES BASE
+   ============================================ */
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  html.light .glass {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Status badges */
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .status-normal {
+    @apply bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+  
+  html.light .status-normal {
+    @apply bg-green-100 text-green-700 border-green-300;
+  }
+
+  .status-warning {
+    @apply bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+  }
+  
+  html.light .status-warning {
+    @apply bg-yellow-100 text-yellow-700 border-yellow-300;
+  }
+
+  .status-failure {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+  
+  html.light .status-failure {
+    @apply bg-red-100 text-red-700 border-red-300;
+  }
+
+  .status-maintenance {
+    @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+  
+  html.light .status-maintenance {
+    @apply bg-blue-100 text-blue-700 border-blue-300;
+  }
+  
+  /* Cards */
+  .card {
+    @apply rounded-xl border transition-all duration-300;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border-color: rgba(51, 65, 85, 0.5);
+  }
+  
+  html.light .card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+  }
+  
+  html.light .card:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* ============================================
+   RESET E TIPOGRAFIA
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* ============================================
+   SCROLLBAR - TEMA ADAPTATIVO
+   ============================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 5px;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  border-radius: 5px;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* ============================================
+   OVERRIDES AUTOMÁTICOS PARA LIGHT MODE
+   IMPORTANTE: NÃO afeta .dark-element nem .blue-header
+   ============================================ */
+
+/* Backgrounds */
+html.light .bg-gray-900:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  background-color: #ffffff !important;
+}
+
+html.light .bg-gray-800:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-gray-800\/50:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  background-color: rgba(248, 250, 252, 0.5) !important;
+}
+
+/* Borders */
+html.light .border-gray-700:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-gray-600:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  border-color: #cbd5e1 !important;
+}
+
+/* Text colors - EXCETO dark-element e blue-header */
+html.light .text-white:not(.dark-element *):not(.blue-header *) {
+  color: #0f172a !important;
+}
+
+html.light .text-gray-100:not(.dark-element *):not(.blue-header *) {
+  color: #1e293b !important;
+}
+
+html.light .text-gray-200:not(.dark-element *):not(.blue-header *) {
+  color: #334155 !important;
+}
+
+html.light .text-gray-300:not(.dark-element *):not(.blue-header *) {
+  color: #475569 !important;
+}
+
+html.light .text-gray-400:not(.dark-element *):not(.blue-header *) {
+  color: #64748b !important;
+}
+
+/* Hovers */
+html.light .hover\:bg-gray-700:hover:not(.dark-element *):not(.blue-header *) {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .hover\:bg-gray-800:hover:not(.dark-element *):not(.blue-header *) {
+  background-color: #e2e8f0 !important;
+}
+
+/* Gradient overrides */
+html.light .from-gray-900:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  --tw-gradient-from: #ffffff !important;
+}
+
+html.light .via-gray-800:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  --tw-gradient-stops: var(--tw-gradient-from), #f8fafc, var(--tw-gradient-to) !important;
+}
+
+html.light .to-gray-900:not(.dark-element):not(.dark-element *):not(.blue-header):not(.blue-header *) {
+  --tw-gradient-to: #ffffff !important;
+}
+
+/* ============================================
+   INPUTS E FORMS
+   ============================================ */
+input, textarea, select {
+  @apply transition-colors duration-200;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  @apply bg-gray-800 border-gray-700 text-white placeholder-gray-500;
+}
+
+html.light input,
+html.light textarea,
+html.light select {
+  @apply bg-white border-gray-300 text-gray-900 placeholder-gray-400;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  @apply border-blue-500 ring-blue-500/20;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+html.light select:focus {
+  @apply border-blue-500 ring-blue-500/20;
+}
+
+/* ============================================
+   TABELAS
+   ============================================ */
+html.dark table {
+  @apply text-gray-200;
+}
+
+html.dark thead {
+  @apply bg-gray-800/50;
+}
+
+html.dark th {
+  @apply text-gray-400 border-gray-700;
+}
+
+html.dark td {
+  @apply border-gray-700/50;
+}
+
+html.dark tbody tr:hover {
+  @apply bg-gray-800/30;
+}
+
+html.light table {
+  @apply text-gray-800;
+}
+
+html.light thead {
+  @apply bg-gray-50;
+}
+
+html.light th {
+  @apply text-gray-600 border-gray-200;
+}
+
+html.light td {
+  @apply border-gray-100;
+}
+
+html.light tbody tr:hover {
+  @apply bg-gray-50;
+}

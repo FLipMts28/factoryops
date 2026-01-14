@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OPERATOR
+  MAINTENANCE
+  ENGINEER
+  ADMIN
+}
+
+enum MachineStatus {
+  NORMAL
+  WARNING
+  FAILURE
+  MAINTENANCE
+}
+
+enum AnnotationType {
+  LINE
+  RECTANGLE
+  TEXT
+  CIRCLE
+  ARROW
+}
+
+enum EventType {
+  MACHINE_STATUS_CHANGE
+  ANNOTATION_CREATED
+  ANNOTATION_UPDATED
+  ANNOTATION_DELETED
+  MESSAGE_SENT
+  USER_CONNECTED
+  USER_DISCONNECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  name      String
+  role      UserRole @default(OPERATOR)
+  createdAt DateTime @default(now())
+  
+  messages    ChatMessage[]
+  annotations Annotation[]
+  eventLogs   EventLog[]
+}
+
+model ProductionLine {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  machines Machine[]
+}
+
+model Machine {
+  id               String         @id @default(uuid())
+  name             String
+  code             String         @unique
+  status           MachineStatus  @default(NORMAL)
+  schemaImageUrl   String?
+  productionLineId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  productionLine ProductionLine @relation(fields: [productionLineId], references: [id], onDelete: Cascade)
+  annotations    Annotation[]
+  messages       ChatMessage[]
+  eventLogs      EventLog[]
+}
+
+model Annotation {
+  id        String         @id @default(uuid())
+  type      AnnotationType
+  content   Json
+  machineId String
+  userId    String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  
+  machine Machine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+  
+  @@index([machineId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  machineId String
+  userId    String
+  createdAt DateTime @default(now())
+  
+  machine Machine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+  
+  @@index([machineId, createdAt])
+}
+
+model EventLog {
+  id          String    @id @default(uuid())
+  eventType   EventType
+  description String
+  metadata    Json?
+  machineId   String?
+  userId      String?
+  createdAt   DateTime  @default(now())
+  
+  machine Machine? @relation(fields: [machineId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id])
+  
+  @@index([machineId, createdAt])
+  @@index([eventType])
+}
