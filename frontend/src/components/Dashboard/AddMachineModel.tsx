@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ProductionLine, MachineStatus } from '../../types';
 
-interface AddMachineModalProps {
+interface AddMachineModelProps {
   isOpen: boolean;
   onClose: () => void;
   productionLines: ProductionLine[];
   onAddMachine: (machineData: any) => void;
 }
 
-export const AddMachineModal = ({ isOpen, onClose, productionLines, onAddMachine }: AddMachineModalProps) => {
+export const AddMachineModel = ({ isOpen, onClose, productionLines, onAddMachine }: AddMachineModelProps) => {
   const { theme } = useTheme();
   const [step, setStep] = useState<'select' | 'existing' | 'new'>('select');
   const [formData, setFormData] = useState({
@@ -22,15 +22,126 @@ export const AddMachineModal = ({ isOpen, onClose, productionLines, onAddMachine
 
   // Mock de equipamentos disponíveis na BD (em produção viria do backend)
   const availableMachines = [
-    { id: 'bd-1', name: 'CNC Fresadora Industrial', code: 'CNC-', category: 'Fresagem' },
-    { id: 'bd-2', name: 'Robô de Soldadura', code: 'RS-', category: 'Soldadura' },
-    { id: 'bd-3', name: 'Prensa Hidráulica', code: 'PH-', category: 'Prensagem' },
-    { id: 'bd-4', name: 'Torno CNC', code: 'TC-', category: 'Torneamento' },
-    { id: 'bd-5', name: 'Centro de Maquinagem', code: 'CM-', category: 'Maquinagem' },
-    { id: 'bd-6', name: 'Robô de Pintura', code: 'RP-', category: 'Pintura' },
-    { id: 'bd-7', name: 'Linha de Montagem', code: 'LM-', category: 'Montagem' },
-    { id: 'bd-8', name: 'Estação de Controlo Qualidade', code: 'QC-', category: 'Qualidade' },
+    { 
+      id: 'bd-1', 
+      name: 'CNC Fresadora Industrial', 
+      code: 'CNC-', 
+      category: 'Fresagem',
+      icon: 'drill' // Broca
+    },
+    { 
+      id: 'bd-2', 
+      name: 'Robô de Soldadura', 
+      code: 'RS-', 
+      category: 'Soldadura',
+      icon: 'robot' // Robô
+    },
+    { 
+      id: 'bd-3', 
+      name: 'Prensa Hidráulica', 
+      code: 'PH-', 
+      category: 'Prensagem',
+      icon: 'press' // Prensa
+    },
+    { 
+      id: 'bd-4', 
+      name: 'Torno CNC', 
+      code: 'TC-', 
+      category: 'Torneamento',
+      icon: 'lathe' // Torno
+    },
+    { 
+      id: 'bd-5', 
+      name: 'Centro de Maquinagem', 
+      code: 'CM-', 
+      category: 'Maquinagem',
+      icon: 'cog' // Engrenagem
+    },
+    { 
+      id: 'bd-6', 
+      name: 'Robô de Pintura', 
+      code: 'RP-', 
+      category: 'Pintura',
+      icon: 'spray' // Spray
+    },
+    { 
+      id: 'bd-7', 
+      name: 'Linha de Montagem', 
+      code: 'LM-', 
+      category: 'Montagem',
+      icon: 'assembly' // Linha de montagem
+    },
+    { 
+      id: 'bd-8', 
+      name: 'Estação de Controlo Qualidade', 
+      code: 'QC-', 
+      category: 'Qualidade',
+      icon: 'check' // Verificação
+    },
   ];
+
+  // Função para renderizar ícone específico de cada equipamento
+  const renderMachineIcon = (iconType: string) => {
+    const iconClass = "w-6 h-6 !text-white";
+    
+    switch (iconType) {
+      case 'drill': // CNC Fresadora
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+          </svg>
+        );
+      case 'robot': // Robô
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+          </svg>
+        );
+      case 'press': // Prensa
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        );
+      case 'lathe': // Torno
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        );
+      case 'cog': // Centro de Maquinagem
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        );
+      case 'spray': // Robô de Pintura
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        );
+      case 'assembly': // Linha de Montagem
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        );
+      case 'check': // Controlo de Qualidade
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        );
+      default:
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+          </svg>
+        );
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -122,10 +233,8 @@ export const AddMachineModal = ({ isOpen, onClose, productionLines, onAddMachine
                   }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                      theme === 'dark' ? 'bg-blue-600' : 'bg-blue-500'
-                    }`}>
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                      <svg className="w-8 h-8 !text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                       </svg>
                     </div>
@@ -148,10 +257,8 @@ export const AddMachineModal = ({ isOpen, onClose, productionLines, onAddMachine
                   }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                      theme === 'dark' ? 'bg-green-600' : 'bg-green-500'
-                    }`}>
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                      <svg className="w-8 h-8 !text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
                     </div>
@@ -194,10 +301,8 @@ export const AddMachineModal = ({ isOpen, onClose, productionLines, onAddMachine
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                        </svg>
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                        {renderMachineIcon(machine.icon)}
                       </div>
                       <div className="flex-1">
                         <h4 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>

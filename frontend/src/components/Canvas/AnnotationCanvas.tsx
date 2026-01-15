@@ -24,14 +24,22 @@ export const AnnotationCanvas = ({ machine }: AnnotationCanvasProps) => {
   const { isOnline } = useOfflineStore();
   const stageRef = useRef<any>(null);
 
+  // Verificar se a máquina é temporária (não existe no backend)
+  const isTempMachine = machine.id.startsWith('new-');
+
   useEffect(() => {
-    fetchAnnotations(machine.id);
-    socketService.joinMachine(machine.id);
+    // Não buscar anotações para máquinas temporárias
+    if (!isTempMachine) {
+      fetchAnnotations(machine.id);
+      socketService.joinMachine(machine.id);
+    }
 
     return () => {
-      socketService.leaveMachine(machine.id);
+      if (!isTempMachine) {
+        socketService.leaveMachine(machine.id);
+      }
     };
-  }, [machine.id]);
+  }, [machine.id, isTempMachine]);
 
   const handleMouseDown = (e: any) => {
     if (!tool) return;
@@ -120,6 +128,30 @@ export const AnnotationCanvas = ({ machine }: AnnotationCanvasProps) => {
       saveAnnotationOffline(annotation);
     }
   };
+
+  // Aviso para máquinas temporárias
+  if (isTempMachine) {
+    return (
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg shadow-lg p-8 text-center border-2 border-yellow-400 dark:border-yellow-600">
+        <div className="flex flex-col items-center space-y-4">
+          <svg className="w-16 h-16 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h3 className="text-xl font-bold text-yellow-900 dark:text-yellow-100 mb-2">
+              Equipamento Temporário
+            </h3>
+            <p className="text-yellow-800 dark:text-yellow-200 mb-4">
+              Este equipamento foi adicionado localmente e ainda não foi salvo no servidor.
+            </p>
+            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+              As anotações e o chat estarão disponíveis após o equipamento ser sincronizado com o backend.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (

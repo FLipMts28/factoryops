@@ -4,14 +4,14 @@ import { useUserStore } from '../../store/userStore';
 import { ProductionLineCard } from './ProductionLineCard';
 import { MachineDetail } from './MachineDetail';
 import { MachineSearch } from './MachineSearch';
-import { AddMachineModal } from './AddMachineModel';
+import { AddMachineModel } from './AddMachineModel';
 import { Machine } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Dashboard = () => {
   const { theme } = useTheme();
   const { currentUser } = useUserStore();
-  const { machines, productionLines, fetchMachines, fetchProductionLines, isLoading } = useMachineStore();
+  const { machines, productionLines, fetchMachines, fetchProductionLines, addMachine, isLoading } = useMachineStore();
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
   const [showAddModal, setShowAddModal] = useState(false);
@@ -55,12 +55,27 @@ export const Dashboard = () => {
     }));
   };
 
-  const handleAddMachine = (machineData: any) => {
-    // Aqui seria chamada a API para adicionar a máquina
-    console.log('Adicionar máquina:', machineData);
-    alert(`Máquina "${machineData.name}" adicionada com sucesso!`);
-    // Recarregar máquinas
-    fetchMachines();
+  const handleAddMachine = async (machineData: any) => {
+    try {
+      // Criar máquina SEM o ID (backend vai gerar)
+      const newMachine: Machine = {
+        id: '', // Será preenchido pelo backend
+        name: machineData.name,
+        code: machineData.code,
+        status: machineData.status,
+        productionLineId: machineData.productionLineId,
+        schemaImageUrl: machineData.schemaImageUrl || '',
+      };
+      
+      // Adicionar ao store (faz POST à API)
+      const savedMachine = await addMachine(newMachine);
+      
+      console.log('Máquina salva com sucesso:', savedMachine);
+      alert(`Máquina "${savedMachine.name}" adicionada com sucesso!`);
+    } catch (error: any) {
+      console.error('Erro ao adicionar máquina:', error);
+      alert(`Erro ao adicionar máquina: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   if (isLoading) {
@@ -178,7 +193,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Modal de Adicionar Equipamento */}
-      <AddMachineModal
+      <AddMachineModel
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         productionLines={productionLines}

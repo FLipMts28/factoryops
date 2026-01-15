@@ -19,6 +19,7 @@ export const productionLinesApi = {
 export const machinesApi = {
   getAll: () => api.get('/machines'),
   getOne: (id: string) => api.get(`/machines/${id}`),
+  create: (data: any) => api.post('/machines', data),
   updateStatus: (id: string, status: string) => 
     api.patch(`/machines/${id}/status`, { status }),
 };
