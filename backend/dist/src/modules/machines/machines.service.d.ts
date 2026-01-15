@@ -37,6 +37,7 @@ export declare class MachinesService {
                 name: string;
                 createdAt: Date;
                 username: string;
+                password: string;
                 role: import(".prisma/client").$Enums.UserRole;
             };
         } & {

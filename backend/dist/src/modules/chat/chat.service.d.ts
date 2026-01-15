@@ -9,6 +9,7 @@ export declare class ChatService {
             name: string;
             createdAt: Date;
             username: string;
+            password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {
@@ -24,6 +25,7 @@ export declare class ChatService {
             name: string;
             createdAt: Date;
             username: string;
+            password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {

@@ -18,6 +18,7 @@ export declare class ChatGateway implements OnGatewayConnection, OnGatewayDiscon
             name: string;
             createdAt: Date;
             username: string;
+            password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {

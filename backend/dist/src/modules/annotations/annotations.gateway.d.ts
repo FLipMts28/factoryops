@@ -12,6 +12,7 @@ export declare class AnnotationsGateway {
             name: string;
             createdAt: Date;
             username: string;
+            password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {
@@ -29,6 +30,7 @@ export declare class AnnotationsGateway {
             name: string;
             createdAt: Date;
             username: string;
+            password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {

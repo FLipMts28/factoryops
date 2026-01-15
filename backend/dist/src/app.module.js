@@ -13,6 +13,7 @@ const machines_module_1 = require("./modules/machines/machines.module");
 const annotations_module_1 = require("./modules/annotations/annotations.module");
 const chat_module_1 = require("./modules/chat/chat.module");
 const production_lines_module_1 = require("./modules/production-lines/production-lines.module");
+const users_module_1 = require("./modules/users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -23,6 +24,7 @@ exports.AppModule = AppModule = __decorate([
             annotations_module_1.AnnotationsModule,
             chat_module_1.ChatModule,
             production_lines_module_1.ProductionLinesModule,
+            users_module_1.UsersModule,
         ],
         providers: [prisma_service_1.PrismaService],
     })

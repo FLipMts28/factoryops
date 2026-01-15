@@ -31,3 +31,12 @@ export const annotationsApi = {
   update: (id: string, data: any) => api.put(`/annotations/${id}`, data),
   delete: (id: string) => api.delete(`/annotations/${id}`),
 };
+
+// Users
+export const usersApi = {
+  getAll: () => api.get('/users'),
+  getOne: (id: string) => api.get(`/users/${id}`),
+  create: (data: any) => api.post('/users', data),
+  update: (id: string, data: any) => api.put(`/users/${id}`, data),
+  delete: (id: string) => api.delete(`/users/${id}`),
+};
