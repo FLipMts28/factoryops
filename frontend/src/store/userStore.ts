@@ -12,7 +12,7 @@ interface UserStore {
   currentUser: User | null;
   users: User[];
   isAuthenticated: boolean;
-  setCurrentUser: (user: User) => void;
+  setCurrentUser: (user: User | null ) => void;
   setUsers: (users: User[]) => void;
   fetchUsers: () => Promise<void>;
   loadLastUser: () => void;
@@ -49,10 +49,17 @@ export const useUserStore = create<UserStore>((set, get) => ({
   isAuthenticated: localStorage.getItem('factoryops_is_authenticated') === 'true',
 
   setCurrentUser: (user) => {
-    set({ currentUser: user, isAuthenticated: true });
-    localStorage.setItem('factoryops_current_user_id', user.id);
-    localStorage.setItem('factoryops_is_authenticated', 'true');
-    console.log('✅ Utilizador autenticado:', user.name);
+    if (user) {
+      set({ currentUser: user, isAuthenticated: true });
+      localStorage.setItem('factoryops_current_user_id', user.id);
+      localStorage.setItem('factoryops_is_authenticated', 'true');
+      console.log('✅ Utilizador autenticado:', user.name);
+    } else {
+      set({ currentUser: null, isAuthenticated: false });
+      localStorage.removeItem('factoryops_current_user_id');
+      localStorage.setItem('factoryops_is_authenticated', 'false');
+      console.log('✅ Utilizador desautenticado');
+    }
   },
   
   setUsers: (users) => set({ users }),
