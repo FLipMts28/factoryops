@@ -60,7 +60,7 @@ export const Navbar = () => {
                   <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  <span className={`text-sm font-medium hidden md:block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
+                  <span className={`text-sm font-medium hidden md:block ${theme === 'dark' ? '!text-white' : 'text-gray-700'}`}>
                     Utilizadores
                   </span>
                 </button>
@@ -77,14 +77,14 @@ export const Navbar = () => {
                     isOnline ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' : 'bg-red-500'
                   }`}
                 />
-                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
+                <span className={`text-xs font-medium ${theme === 'dark' ? '!text-white' : 'text-gray-700'}`}>
                   {isOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
 
               {/* Pending Sync Count */}
               {pendingSyncCount > 0 && (
-                <div className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white px-3 py-2 rounded-full text-xs font-semibold flex items-center space-x-2 shadow-lg">
+                <div className="bg-gradient-to-r from-yellow-600 to-orange-600 !text-white px-3 py-2 rounded-full text-xs font-semibold flex items-center space-x-2 shadow-lg">
                   <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>

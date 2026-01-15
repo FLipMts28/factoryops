@@ -34,12 +34,12 @@ export const UserSelector = () => {
         }`}
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-          <span className="text-sm font-semibold text-white">
+          <span className="text-sm font-semibold !text-white">
             {currentUser?.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
           </span>
         </div>
         <div className="text-left hidden md:block">
-          <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <div className={`text-sm font-medium ${theme === 'dark' ? '!text-white' : 'text-gray-900'}`}>
             {currentUser?.name}
           </div>
           <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -103,7 +103,7 @@ export const UserSelector = () => {
                   </div>
                   <div className="flex-1">
                     <div className={`text-sm font-medium ${
-                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      theme === 'dark' ? '!text-white' : 'text-gray-900'
                     }`}>
                       {user.name}
                     </div>
