@@ -33,13 +33,13 @@ export const UserSelector = () => {
             : 'hover:bg-gray-100'
         }`}
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-          <span className="text-sm font-semibold !text-white">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 grid place-items-center shadow-lg">
+          <span className="text-sm font-semibold !text-white leading-none translate-y-[-1px]">
             {currentUser?.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
           </span>
         </div>
         <div className="text-left hidden md:block">
-          <div className={`text-sm font-medium ${theme === 'dark' ? '!text-white' : 'text-gray-900'}`}>
+          <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             {currentUser?.name}
           </div>
           <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -91,19 +91,19 @@ export const UserSelector = () => {
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  <div className={`w-10 h-10 rounded-full grid place-items-center ${
                     user.role === 'OPERATOR' ? 'bg-green-100 text-green-700' :
                     user.role === 'MAINTENANCE' ? 'bg-yellow-100 text-yellow-700' :
                     user.role === 'ENGINEER' ? 'bg-blue-100 text-blue-700' :
                     'bg-purple-100 text-purple-700'
                   }`}>
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold leading-none translate-y-[-1px]">
                       {user.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                     </span>
                   </div>
                   <div className="flex-1">
                     <div className={`text-sm font-medium ${
-                      theme === 'dark' ? '!text-white' : 'text-gray-900'
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
                     }`}>
                       {user.name}
                     </div>

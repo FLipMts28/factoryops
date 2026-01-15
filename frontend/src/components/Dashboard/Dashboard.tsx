@@ -1,19 +1,67 @@
 import { useEffect, useState } from 'react';
 import { useMachineStore } from '../../store/machineStore';
+import { useUserStore } from '../../store/userStore';
 import { ProductionLineCard } from './ProductionLineCard';
 import { MachineDetail } from './MachineDetail';
+import { MachineSearch } from './MachineSearch';
+import { AddMachineModal } from './AddMachineModel';
 import { Machine } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Dashboard = () => {
   const { theme } = useTheme();
+  const { currentUser } = useUserStore();
   const { machines, productionLines, fetchMachines, fetchProductionLines, isLoading } = useMachineStore();
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+  const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const canAddMachine = currentUser?.role === 'ADMIN' || currentUser?.role === 'ENGINEER';
 
   useEffect(() => {
     fetchMachines();
     fetchProductionLines();
   }, []);
+
+  // Inicializar todas as linhas como expandidas
+  useEffect(() => {
+    const initialState: Record<string, boolean> = {};
+    productionLines.forEach(line => {
+      initialState[line.id] = true;
+    });
+    setExpandedLines(initialState);
+  }, [productionLines]);
+
+  const handleExpandAll = () => {
+    const allExpanded: Record<string, boolean> = {};
+    productionLines.forEach(line => {
+      allExpanded[line.id] = true;
+    });
+    setExpandedLines(allExpanded);
+  };
+
+  const handleCollapseAll = () => {
+    const allCollapsed: Record<string, boolean> = {};
+    productionLines.forEach(line => {
+      allCollapsed[line.id] = false;
+    });
+    setExpandedLines(allCollapsed);
+  };
+
+  const handleToggleLine = (lineId: string) => {
+    setExpandedLines(prev => ({
+      ...prev,
+      [lineId]: !prev[lineId]
+    }));
+  };
+
+  const handleAddMachine = (machineData: any) => {
+    // Aqui seria chamada a API para adicionar a máquina
+    console.log('Adicionar máquina:', machineData);
+    alert(`Máquina "${machineData.name}" adicionada com sucesso!`);
+    // Recarregar máquinas
+    fetchMachines();
+  };
 
   if (isLoading) {
     return (
@@ -49,6 +97,61 @@ export const Dashboard = () => {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="flex justify-center">
+        <MachineSearch 
+          machines={machines}
+          onMachineSelect={setSelectedMachine}
+        />
+      </div>
+
+      {/* Action Bar - Botões de controlo */}
+      {productionLines.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleExpandAll}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                theme === 'dark'
+                  ? 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              <span>Expandir Tudo</span>
+            </button>
+            <button
+              onClick={handleCollapseAll}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                theme === 'dark'
+                  ? 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+              }`}
+            >
+              <svg className="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              <span>Recolher Tudo</span>
+            </button>
+          </div>
+
+          {/* Botão Adicionar Equipamento - apenas para Admin/Engineer */}
+          {canAddMachine && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 !text-white font-semibold rounded-lg shadow-lg transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Adicionar Equipamento</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {productionLines.length === 0 && (
         <div className={`rounded-xl shadow-xl border p-8 text-center transition-colors duration-300 ${
           theme === 'dark'
@@ -68,9 +171,19 @@ export const Dashboard = () => {
             productionLine={line}
             machines={machines.filter(m => m.productionLineId === line.id)}
             onMachineClick={setSelectedMachine}
+            isExpanded={expandedLines[line.id] ?? true}
+            onToggleExpand={() => handleToggleLine(line.id)}
           />
         ))}
       </div>
+
+      {/* Modal de Adicionar Equipamento */}
+      <AddMachineModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        productionLines={productionLines}
+        onAddMachine={handleAddMachine}
+      />
 
       {machines.some(m => !m.productionLineId) && (
         <div className={`rounded-xl shadow-xl border p-6 transition-colors duration-300 ${

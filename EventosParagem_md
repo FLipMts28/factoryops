@@ -1,0 +1,321 @@
+# 🔧 Correção: Eventos de Paragem Filtrados por Linha
+
+## 🐛 Problema Identificado
+
+Os **Eventos de Paragem** mostravam sempre as mesmas 3 máquinas (hardcoded), independentemente do filtro de linha de produção selecionado.
+
+**Exemplo do problema:**
+- Filtro: "Linha de Chassis"
+- Eventos mostrados: "Robô de Soldadura 12", "Prensa Hidráulica 3", "CNC Fresadora 8"
+- ❌ Essas máquinas podem não estar na linha selecionada!
+
+---
+
+## ✅ Solução Implementada
+
+### **Antes: Eventos Hardcoded**
+
+```typescript
+const downtimeEvents = [
+  {
+    id: '1',
+    machineName: 'Robô de Soldadura 12',
+    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    duration: 45,
+    reason: 'Falha no sensor de proximidade',
+    status: 'IN_PROGRESS',
+  },
+  {
+    id: '2',
+    machineName: 'Prensa Hidráulica 3',
+    startTime: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    duration: 120,
+    reason: 'Manutenção preventiva',
+    status: 'RESOLVED',
+  },
+  {
+    id: '3',
+    machineName: 'CNC Fresadora 8',
+    startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    duration: 180,
+    reason: 'Substituição de componente',
+    status: 'RESOLVED',
+  },
+];
+```
+
+❌ **Problemas:**
+- Sempre as mesmas 3 máquinas
+- Não respeita filtro de linha de produção
+- Dados fictícios que não mudam
+
+---
+
+### **Depois: Eventos Dinâmicos Filtrados**
+
+```typescript
+// Gerar eventos de paragem baseados nas máquinas filtradas
+const generateDowntimeEvents = () => {
+  const events = [];
+  
+  // Filtrar apenas máquinas com problemas NA LINHA SELECIONADA
+  const problemMachines = filteredMachines.filter(
+    m => m.status === MachineStatus.FAILURE || m.status === MachineStatus.MAINTENANCE
+  );
+
+  // Pegar até 5 eventos de máquinas com problemas
+  const selectedMachines = problemMachines.slice(0, 5);
+  
+  selectedMachines.forEach((machine, index) => {
+    const hoursAgo = (index + 1) * 2; // 2h, 4h, 6h, etc
+    const duration = 45 + Math.random() * 135; // 45-180 minutos
+    
+    const reasons = {
+      [MachineStatus.FAILURE]: [
+        'Falha no sensor de proximidade',
+        'Erro de comunicação PLC',
+        'Sobrecarga do motor principal',
+        'Falha no sistema hidráulico',
+        'Problema elétrico detectado',
+      ],
+      [MachineStatus.MAINTENANCE]: [
+        'Manutenção preventiva programada',
+        'Substituição de componente',
+        'Lubrificação e ajustes',
+        'Calibração de sensores',
+        'Atualização de software',
+      ],
+    };
+
+    const statusReasons = reasons[machine.status] || reasons[MachineStatus.FAILURE];
+    const randomReason = statusReasons[Math.floor(Math.random() * statusReasons.length)];
+
+    events.push({
+      id: machine.id,
+      machineName: machine.name,
+      startTime: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
+      duration: Math.round(duration),
+      reason: randomReason,
+      status: machine.status === MachineStatus.FAILURE ? 'IN_PROGRESS' : 'RESOLVED',
+    });
+  });
+
+  return events;
+};
+
+const downtimeEvents = generateDowntimeEvents();
+```
+
+✅ **Melhorias:**
+- Eventos gerados dinamicamente
+- Baseados nas máquinas da linha selecionada
+- Apenas máquinas com status FAILURE ou MAINTENANCE
+- Até 5 eventos mostrados
+- Razões realistas baseadas no status
+
+---
+
+## 🎯 Como Funciona Agora
+
+### Exemplo 1: Todas as Linhas
+```
+Filtro: "Todas as Linhas"
+↓
+filteredMachines = todas as 20 máquinas
+↓
+problemMachines = 8 máquinas (FAILURE ou MAINTENANCE)
+↓
+Eventos mostrados: 5 primeiras máquinas com problemas
+```
+
+### Exemplo 2: Linha de Chassis
+```
+Filtro: "Linha de Chassis"
+↓
+filteredMachines = 6 máquinas da linha de chassis
+↓
+problemMachines = 2 máquinas (FAILURE ou MAINTENANCE)
+↓
+Eventos mostrados: 2 máquinas da linha de chassis
+```
+
+### Exemplo 3: Linha sem Problemas
+```
+Filtro: "Linha de Montagem Final"
+↓
+filteredMachines = 5 máquinas da linha
+↓
+problemMachines = 0 máquinas (todas NORMAL)
+↓
+Eventos mostrados: Tabela vazia
+```
+
+---
+
+## 📊 Detalhes dos Eventos Gerados
+
+### Status da Máquina → Status do Evento
+
+| Status Máquina | Status Evento | Significado |
+|----------------|---------------|-------------|
+| FAILURE | IN_PROGRESS | Falha ativa, ainda não resolvida |
+| MAINTENANCE | RESOLVED | Manutenção concluída |
+
+### Razões por Status
+
+**FAILURE (Em Progresso):**
+- Falha no sensor de proximidade
+- Erro de comunicação PLC
+- Sobrecarga do motor principal
+- Falha no sistema hidráulico
+- Problema elétrico detectado
+
+**MAINTENANCE (Resolvido):**
+- Manutenção preventiva programada
+- Substituição de componente
+- Lubrificação e ajustes
+- Calibração de sensores
+- Atualização de software
+
+### Tempo e Duração
+
+- **startTime:** Entre 2h e 10h atrás (escalonado)
+- **duration:** Entre 45 e 180 minutos (aleatório)
+- **Máximo de eventos:** 5 (para não sobrecarregar a UI)
+
+---
+
+## 🔄 Comportamento Dinâmico
+
+### Ao Mudar Filtro de Linha
+
+1. **Usuário seleciona linha** → `selectedLineId` muda
+2. **useEffect detecta mudança** → regenera `filteredMachines`
+3. **Componente re-renderiza** → `generateDowntimeEvents()` é executada
+4. **Novos eventos gerados** → baseados nas máquinas da nova linha
+5. **Tabela atualizada** → mostra apenas eventos relevantes
+
+### Ao Mudar Período de Análise
+
+Os eventos continuam baseados nas máquinas atuais, mas a tabela mostra o estado atual das máquinas (não filtrado por data, pois são eventos "recentes").
+
+---
+
+## 📁 Ficheiro Modificado
+
+```
+frontend/src/
+└── components/Analytics/
+    └── AnalyticsDashboard.tsx    ✅ MODIFICADO
+```
+
+### Mudanças:
+- ❌ Removido: Array hardcoded de 3 eventos
+- ✅ Adicionado: Função `generateDowntimeEvents()`
+- ✅ Adicionado: Filtro por `filteredMachines`
+- ✅ Adicionado: Razões variadas por status
+- ✅ Adicionado: Limite de 5 eventos máximo
+
+---
+
+## 🚀 Instalação
+
+```bash
+# Copiar ficheiro corrigido
+cp AnalyticsDashboard.tsx frontend/src/components/Analytics/
+
+# Reiniciar frontend
+cd frontend
+npm run dev
+```
+
+---
+
+## ✅ Testes Recomendados
+
+### Teste 1: Filtro por Linha Específica
+1. Abrir dashboard de análise
+2. Selecionar uma linha específica (ex: "Linha de Chassis")
+3. **Verificar:** Eventos mostrados são apenas dessa linha
+4. **Verificar:** Nome das máquinas corresponde à linha
+
+### Teste 2: Todas as Linhas
+1. Selecionar "Todas as Linhas"
+2. **Verificar:** Eventos de diferentes linhas aparecem
+3. **Verificar:** Máximo de 5 eventos
+
+### Teste 3: Linha sem Problemas
+1. Selecionar uma linha onde todas as máquinas estão NORMAL
+2. **Verificar:** Tabela vazia ou mensagem apropriada
+
+### Teste 4: Mudança de Filtro
+1. Começar com "Todas as Linhas"
+2. Trocar para linha específica
+3. **Verificar:** Eventos mudam imediatamente
+4. Voltar para "Todas as Linhas"
+5. **Verificar:** Eventos voltam a mostrar todas as linhas
+
+---
+
+## 🎨 Experiência do Utilizador
+
+### Antes ❌
+```
+Filtro: Linha de Chassis
+Eventos Mostrados:
+- Robô de Soldadura 12      (pode não estar nesta linha)
+- Prensa Hidráulica 3        (pode não estar nesta linha)
+- CNC Fresadora 8            (pode não estar nesta linha)
+```
+
+### Depois ✅
+```
+Filtro: Linha de Chassis
+Eventos Mostrados:
+- Prensa de Chassis A1       ✅ (está nesta linha)
+- Soldadora Chassis B3       ✅ (está nesta linha)
+- (apenas máquinas da linha selecionada)
+```
+
+---
+
+## 💡 Melhorias Futuras Sugeridas
+
+1. **Filtro por Período nos Eventos**
+   - Mostrar apenas eventos dentro do dateRange selecionado
+   - Requer backend para armazenar histórico
+
+2. **Histórico de Eventos**
+   - Armazenar eventos passados
+   - Permitir análise temporal
+
+3. **Notificações de Novos Eventos**
+   - WebSocket para eventos em tempo real
+   - Badge de "novo evento"
+
+4. **Detalhes do Evento**
+   - Modal com mais informações
+   - Timeline de resolução
+   - Técnico responsável
+
+5. **Export de Eventos**
+   - Incluir eventos no relatório PDF
+   - Export CSV de eventos
+
+---
+
+## 🎉 Resultado Final
+
+✅ **Eventos de Paragem agora filtrados corretamente por linha de produção!**
+
+- Mostra apenas máquinas da linha selecionada
+- Eventos dinâmicos baseados no status real
+- Razões realistas por tipo de problema
+- Máximo de 5 eventos para clareza
+- Atualização automática ao mudar filtro
+
+---
+
+**Versão:** 1.2.3  
+**Data:** Janeiro 2025  
+**Tipo:** Correção de Filtro + Geração Dinâmica de Dados

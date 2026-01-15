@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useMachineStore } from '../../store/machineStore';
 import { useAnalyticsStore } from '../../store/analyticsStore';
-import { MetricCard } from './MetricCard';
 import { OEEGauge } from './OEEGauge';
 import { StatusDistribution } from './StatusDistribution';
 import { OEEChart } from './OEEChart';
 import { DowntimeTable } from './DowntimeTable';
 import { FilterPanel } from './FilterPanel';
 import { MachineStatus } from '../../types';
-import { getStatusPercentage, generateMockMetrics } from '../../utils/analytics';
 import { generatePDFReport } from '../../utils/reportExport';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -94,32 +92,63 @@ export const AnalyticsDashboard = () => {
     { status: MachineStatus.MAINTENANCE, count: maintenanceCount },
   ];
 
-  const downtimeEvents = [
-    {
-      id: '1',
-      machineName: 'Robô de Soldadura 12',
-      startTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      duration: 45,
-      reason: 'Falha no sensor de proximidade',
-      status: 'IN_PROGRESS',
-    },
-    {
-      id: '2',
-      machineName: 'Prensa Hidráulica 3',
-      startTime: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      duration: 120,
-      reason: 'Manutenção preventiva',
-      status: 'RESOLVED',
-    },
-    {
-      id: '3',
-      machineName: 'CNC Fresadora 8',
-      startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      duration: 180,
-      reason: 'Substituição de componente',
-      status: 'RESOLVED',
-    },
-  ];
+  // Gerar eventos de paragem baseados nas máquinas filtradas
+  const generateDowntimeEvents = () => {
+    const events: Array<{
+      id: string;
+      machineName: string;
+      startTime: Date;
+      duration: number;
+      reason: string;
+      status: string;
+    }> = [];
+    const problemMachines = filteredMachines.filter(
+      m => m.status === MachineStatus.FAILURE || m.status === MachineStatus.MAINTENANCE
+    );
+
+    // Pegar até 5 eventos de máquinas com problemas
+    const selectedMachines = problemMachines.slice(0, 5);
+    
+    selectedMachines.forEach((machine, index) => {
+      const hoursAgo = (index + 1) * 2; // 2h, 4h, 6h, etc
+      const duration = 45 + Math.random() * 135; // 45-180 minutos
+      
+      const reasons: Record<MachineStatus, string[]> = {
+        [MachineStatus.NORMAL]: [],
+        [MachineStatus.WARNING]: [],
+        [MachineStatus.FAILURE]: [
+          'Falha no sensor de proximidade',
+          'Erro de comunicação PLC',
+          'Sobrecarga do motor principal',
+          'Falha no sistema hidráulico',
+          'Problema elétrico detectado',
+        ],
+        [MachineStatus.MAINTENANCE]: [
+          'Manutenção preventiva programada',
+          'Substituição de componente',
+          'Lubrificação e ajustes',
+          'Calibração de sensores',
+          'Atualização de software',
+        ],
+      };
+
+      const statusReasons = reasons[machine.status] || reasons[MachineStatus.FAILURE];
+      const randomReason = statusReasons[Math.floor(Math.random() * statusReasons.length)];
+
+      events.push({
+        id: machine.id,
+        machineName: machine.name,
+        startTime: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
+        duration: Math.round(duration),
+        reason: randomReason,
+        status: machine.status === MachineStatus.FAILURE ? 'IN_PROGRESS' : 'RESOLVED',
+      });
+    });
+
+    return events;
+  };
+
+  const downtimeEvents = generateDowntimeEvents();
 
   const handleExportReport = async () => {
     try {
