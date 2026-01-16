@@ -1,10 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MachineStatus } from '../../common/enums';
+import { CreateMachineDto } from './dto/create-machine.dto';
 
 @Injectable()
 export class MachinesService {
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * Create a new machine in the database
+   * @param createMachineDto Machine data
+   * @returns Created machine with production line
+   */
+  async create(createMachineDto: CreateMachineDto) {
+    return this.prisma.machine.create({
+      data: {
+        name: createMachineDto.name,
+        code: createMachineDto.code,
+        status: createMachineDto.status,
+        productionLineId: createMachineDto.productionLineId,
+        schemaImageUrl: createMachineDto.schemaImageUrl,
+      },
+      include: {
+        productionLine: true,
+      },
+    });
+  }
 
   async findAll() {
     return this.prisma.machine.findMany({

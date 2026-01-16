@@ -10,7 +10,7 @@ interface ChatPanelProps {
 }
 
 export const ChatPanel = ({ machineId }: ChatPanelProps) => {
-  const { messages, clearMessages } = useChatStore();
+  const { messages, clearMessages, addMessage } = useChatStore();
   const { currentUser } = useUserStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -20,9 +20,13 @@ export const ChatPanel = ({ machineId }: ChatPanelProps) => {
   useEffect(() => {
     if (!currentUser || isTempMachine) return;
     
+    console.log('💬 Entrando no chat da máquina:', machineId);
     socketService.joinMachineChat(machineId, currentUser.id);
 
+    // Não precisamos de listener local - o useWebSocket já registra onNewMessage globalmente
+
     return () => {
+      console.log('💬 Saindo do chat da máquina:', machineId);
       socketService.leaveMachineChat(machineId);
       clearMessages();
     };
@@ -36,6 +40,22 @@ export const ChatPanel = ({ machineId }: ChatPanelProps) => {
   const handleSendMessage = (content: string) => {
     if (!currentUser) return;
     
+    const tempId = `temp-${Date.now()}-${Math.random()}`;
+    console.log('📤 Enviando mensagem:', { tempId, content, machineId, userId: currentUser.id });
+    
+    // Adicionar localmente IMEDIATAMENTE com ID temporário
+    const tempMessage: any = {
+      id: tempId,
+      content,
+      machineId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      createdAt: new Date().toISOString(),
+    };
+    
+    addMessage(tempMessage);
+    
+    // Enviar via WebSocket
     socketService.sendMessage({
       content,
       machineId,

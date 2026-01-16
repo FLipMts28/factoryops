@@ -5,36 +5,36 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     create(createUserDto: CreateUserDto): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         username: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
     findAll(): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         username: string;
         role: import(".prisma/client").$Enums.UserRole;
     }[]>;
     findOne(id: string): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         username: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         username: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
     remove(id: string): Promise<{
-        id: string;
         name: string;
+        id: string;
         username: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;

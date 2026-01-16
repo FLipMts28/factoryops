@@ -15,10 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MachinesController = void 0;
 const common_1 = require("@nestjs/common");
 const machines_service_1 = require("./machines.service");
+const create_machine_dto_1 = require("./dto/create-machine.dto");
 const update_machine_status_dto_1 = require("./dto/update-machine-status.dto");
 let MachinesController = class MachinesController {
     constructor(machinesService) {
         this.machinesService = machinesService;
+    }
+    async create(createMachineDto) {
+        return this.machinesService.create(createMachineDto);
     }
     async findAll() {
         return this.machinesService.findAll();
@@ -31,6 +35,13 @@ let MachinesController = class MachinesController {
     }
 };
 exports.MachinesController = MachinesController;
+__decorate([
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_machine_dto_1.CreateMachineDto]),
+    __metadata("design:returntype", Promise)
+], MachinesController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),

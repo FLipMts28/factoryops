@@ -200,7 +200,7 @@ export const AddMachineModel = ({ isOpen, onClose, productionLines, onAddMachine
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Adicionar Equipamento</h2>
+              <h2 className="text-2xl font-bold !text-white">Adicionar Equipamento</h2>
             </div>
             <button
               onClick={onClose}

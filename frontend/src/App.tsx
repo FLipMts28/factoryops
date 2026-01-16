@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { MainLayout } from './components/Layout/MainLayout';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { AnalyticsDashboard } from './components/Analytics/AnalyticsDashboard';
-import { Login } from './components/Auth/Login/login';
+import { Login } from './components/Auth';
 import { useMachineStore } from './store/machineStore';
 import { useUserStore } from './store/userStore';
 import { useWebSocket } from './hooks/useWebSocket';
@@ -21,9 +21,13 @@ function AppContent() {
   const fetchProductionLines = useMachineStore((state) => state.fetchProductionLines);
   const { fetchUsers, loadLastUser, isAuthenticated } = useUserStore();
 
+  // Tentar carregar último user ao iniciar (apenas uma vez)
+  useEffect(() => {
+    loadLastUser();
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
-      loadLastUser();
       fetchMachines();
       fetchProductionLines();
       fetchUsers();
@@ -38,7 +42,7 @@ function AppContent() {
 
   // Se não estiver autenticado, mostrar tela de login
   if (!isAuthenticated) {
-    return <Login />;
+    return <Login/>;
   }
 
   return (

@@ -1,10 +1,17 @@
-import { Controller, Get, Param, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Patch, Body } from '@nestjs/common';
 import { MachinesService } from './machines.service';
+import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineStatusDto } from './dto/update-machine-status.dto';
 
 @Controller('machines')
 export class MachinesController {
   constructor(private readonly machinesService: MachinesService) {}
+
+  // Create new machine
+  @Post()
+  async create(@Body() createMachineDto: CreateMachineDto) {
+    return this.machinesService.create(createMachineDto);
+  }
 
   @Get()
   async findAll() {

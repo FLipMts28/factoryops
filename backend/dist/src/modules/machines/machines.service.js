@@ -17,6 +17,20 @@ let MachinesService = class MachinesService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async create(createMachineDto) {
+        return this.prisma.machine.create({
+            data: {
+                name: createMachineDto.name,
+                code: createMachineDto.code,
+                status: createMachineDto.status,
+                productionLineId: createMachineDto.productionLineId,
+                schemaImageUrl: createMachineDto.schemaImageUrl,
+            },
+            include: {
+                productionLine: true,
+            },
+        });
+    }
     async findAll() {
         return this.prisma.machine.findMany({
             include: {

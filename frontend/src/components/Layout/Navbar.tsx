@@ -1,6 +1,5 @@
 // frontend/src/components/Layout/Navbar.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useOfflineStore } from '../../store/offlineStore';
 import { useUserStore } from '../../store/userStore';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,7 +7,6 @@ import { UserManagement } from '../Admin/UserManagement';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
 export const Navbar = () => {
-  const navigate = useNavigate();
   const { isOnline, pendingSyncCount } = useOfflineStore();
   const { currentUser, setCurrentUser } = useUserStore();
   const { theme } = useTheme();
@@ -19,7 +17,8 @@ export const Navbar = () => {
   const handleLogout = () => {
     if (confirm('Tem certeza que deseja terminar a sessão?')) {
       setCurrentUser(null);
-      navigate('/login');
+      // Recarregar página - vai para login automaticamente
+      window.location.reload();
     }
   };
 

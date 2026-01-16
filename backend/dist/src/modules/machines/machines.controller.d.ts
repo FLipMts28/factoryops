@@ -1,31 +1,51 @@
 import { MachinesService } from './machines.service';
+import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineStatusDto } from './dto/update-machine-status.dto';
 export declare class MachinesController {
     private readonly machinesService;
     constructor(machinesService: MachinesService);
-    findAll(): Promise<({
+    create(createMachineDto: CreateMachineDto): Promise<{
         productionLine: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
-        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        schemaImageUrl: string | null;
         productionLineId: string;
+        schemaImageUrl: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    findAll(): Promise<({
+        productionLine: {
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+            isActive: boolean;
+        };
+    } & {
+        name: string;
+        code: string;
+        status: import(".prisma/client").$Enums.MachineStatus;
+        productionLineId: string;
+        schemaImageUrl: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     })[]>;
     findOne(id: string): Promise<{
         productionLine: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
@@ -33,8 +53,8 @@ export declare class MachinesController {
         };
         annotations: ({
             user: {
-                id: string;
                 name: string;
+                id: string;
                 createdAt: Date;
                 username: string;
                 password: string;
@@ -50,31 +70,31 @@ export declare class MachinesController {
             userId: string;
         })[];
     } & {
-        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        schemaImageUrl: string | null;
         productionLineId: string;
+        schemaImageUrl: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     updateStatus(id: string, updateStatusDto: UpdateMachineStatusDto): Promise<{
         productionLine: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
-        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        schemaImageUrl: string | null;
         productionLineId: string;
+        schemaImageUrl: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     }>;

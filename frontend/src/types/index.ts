@@ -81,6 +81,7 @@ export interface ChatMessage {
   content: string;
   machineId: string;
   userId: string;
+  userName?: string;
   user?: User;
   createdAt: string;
 }

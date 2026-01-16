@@ -6,8 +6,8 @@ export declare class AnnotationsService {
     constructor(prisma: PrismaService);
     findByMachine(machineId: string): Promise<({
         user: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -24,8 +24,8 @@ export declare class AnnotationsService {
     })[]>;
     create(data: CreateAnnotationDto): Promise<{
         user: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -42,8 +42,8 @@ export declare class AnnotationsService {
     }>;
     update(id: string, data: UpdateAnnotationDto): Promise<{
         user: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             username: string;
             password: string;

@@ -8,8 +8,8 @@ export declare class AnnotationsGateway {
     handleLeaveMachine(client: Socket, machineId: string): void;
     handleCreateAnnotation(data: any): Promise<{
         user: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -26,8 +26,8 @@ export declare class AnnotationsGateway {
     }>;
     handleUpdateAnnotation(data: any): Promise<{
         user: {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             username: string;
             password: string;
