@@ -78,6 +78,28 @@ let MachinesService = class MachinesService {
             return this.updateStatus(randomMachine.id, randomStatus);
         }
     }
+    async remove(id) {
+        const machine = await this.findOne(id);
+        if (!machine) {
+            throw new Error('Máquina não encontrada');
+        }
+        await this.prisma.machine.delete({
+            where: { id },
+        });
+        await this.prisma.eventLog.create({
+            data: {
+                eventType: 'MACHINE_STATUS_CHANGE',
+                description: `Machine ${machine.name} (${machine.code}) was deleted`,
+                metadata: {
+                    action: 'DELETE',
+                    machineName: machine.name,
+                    machineCode: machine.code,
+                    deletedMachineId: id,
+                },
+            },
+        });
+        return { success: true, message: 'Máquina deletada com sucesso' };
+    }
 };
 exports.MachinesService = MachinesService;
 exports.MachinesService = MachinesService = __decorate([

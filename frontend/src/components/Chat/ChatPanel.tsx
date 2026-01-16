@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { socketService } from '../../services/socket';
 import { useChatStore } from '../../store/chatStore';
 import { useUserStore } from '../../store/userStore';
@@ -10,9 +10,8 @@ interface ChatPanelProps {
 }
 
 export const ChatPanel = ({ machineId }: ChatPanelProps) => {
-  const { messages, clearMessages, addMessage } = useChatStore();
+  const { messages, clearMessages, addMessage, setMessages, clearUnread } = useChatStore();
   const { currentUser } = useUserStore();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Verificar se a máquina é temporária
   const isTempMachine = machineId.startsWith('new-');
@@ -21,6 +20,27 @@ export const ChatPanel = ({ machineId }: ChatPanelProps) => {
     if (!currentUser || isTempMachine) return;
     
     console.log('💬 Entrando no chat da máquina:', machineId);
+    
+    // Carregar histórico de mensagens do backend
+    const loadHistory = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/chat/machine/${machineId}`);
+        if (response.ok) {
+          const messages = await response.json();
+          console.log('📜 Histórico carregado:', messages.length, 'mensagens');
+          setMessages(messages);
+        }
+      } catch (error) {
+        console.warn('⚠️  Erro ao carregar histórico:', error);
+      }
+    };
+    
+    loadHistory();
+    
+    // Limpar contador de não lidas
+    clearUnread(machineId);
+    
+    // Entrar no chat via WebSocket
     socketService.joinMachineChat(machineId, currentUser.id);
 
     // Não precisamos de listener local - o useWebSocket já registra onNewMessage globalmente
@@ -31,11 +51,6 @@ export const ChatPanel = ({ machineId }: ChatPanelProps) => {
       clearMessages();
     };
   }, [machineId, currentUser, isTempMachine]);
-
-  useEffect(() => {
-    // Auto scroll to bottom
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const handleSendMessage = (content: string) => {
     if (!currentUser) return;
@@ -108,8 +123,6 @@ export const ChatPanel = ({ machineId }: ChatPanelProps) => {
       </div>
 
       <MessageList messages={messages} currentUserId={currentUser.id} />
-
-      <div ref={messagesEndRef} />
 
       <MessageInput onSend={handleSendMessage} onTyping={handleTyping} />
     </div>

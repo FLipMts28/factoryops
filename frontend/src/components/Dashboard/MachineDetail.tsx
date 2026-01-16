@@ -9,11 +9,30 @@ import { useTheme } from '../../context/ThemeContext';
 interface MachineDetailProps {
   machine: Machine;
   onBack: () => void;
+  onDelete?: (machineId: string) => void;
 }
 
-export const MachineDetail = ({ machine, onBack }: MachineDetailProps) => {
+export const MachineDetail = ({ machine, onBack, onDelete }: MachineDetailProps) => {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<'canvas' | 'chat' | 'documents'>('canvas');
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    const confirmMessage = `Tem certeza que deseja apagar "${machine.name}"?\n\nEsta ação não pode ser desfeita e irá remover:\n- Todas as anotações\n- Todas as mensagens do chat\n- Todos os documentos\n\nDigite o código do equipamento (${machine.code}) para confirmar:`;
+    
+    const userInput = prompt(confirmMessage);
+    
+    if (userInput === machine.code) {
+      try {
+        await onDelete(machine.id);
+      } catch (error) {
+        alert('Erro ao apagar equipamento. Tente novamente.');
+      }
+    } else if (userInput !== null) {
+      alert('Código incorreto. Equipamento não foi apagado.');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -32,7 +51,24 @@ export const MachineDetail = ({ machine, onBack }: MachineDetailProps) => {
               </svg>
               <span>Voltar</span>
             </button>
-            <MachineStatusBadge status={machine.status} size="lg" />
+            
+            <div className="flex items-center space-x-3">
+              <MachineStatusBadge status={machine.status} size="lg" />
+              
+              {/* Botão Delete */}
+              {onDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg"
+                  title="Apagar Equipamento"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Apagar</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div>

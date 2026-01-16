@@ -102,12 +102,12 @@ export const Navbar = () => {
               {/* Current User Display with Logout */}
               {currentUser && (
                 <div className="flex items-center space-x-2">
-                  <div className={`flex items-center space-x-3 px-4 py-2 rounded-lg border ${
+                  <div className={`flex items-center space-x-1 px-2 py-1 rounded-lg border ${
                     theme === 'dark'
                       ? 'bg-gray-800 border-gray-700'
                       : 'bg-white border-gray-300'
                   }`}>
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full grid place-items-center !text-white font-bold text-sm shadow-lg">
+                    <div className="w-7 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full grid place-items-center !text-white font-bold text-sm shadow-lg">
                       {currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                     <div className="hidden md:block">

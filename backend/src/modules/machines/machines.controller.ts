@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Patch, Delete, Body } from '@nestjs/common';
 import { MachinesService } from './machines.service';
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineStatusDto } from './dto/update-machine-status.dto';
@@ -29,5 +29,10 @@ export class MachinesController {
     @Body() updateStatusDto: UpdateMachineStatusDto,
   ) {
     return this.machinesService.updateStatus(id, updateStatusDto.status);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.machinesService.remove(id);
   }
 }

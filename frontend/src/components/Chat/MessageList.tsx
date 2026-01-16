@@ -1,4 +1,5 @@
 // frontend/src/components/Chat/MessageList.tsx
+import { useEffect, useRef } from 'react';
 import { ChatMessage } from '../../types';
 import { useChatStore } from '../../store/chatStore';
 
@@ -9,6 +10,12 @@ interface MessageListProps {
 
 export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
   const { typingUsers } = useChatStore();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll quando mensagens mudam
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -66,6 +73,9 @@ export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
           </div>
         </div>
       )}
+
+      {/* Âncora para auto-scroll */}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

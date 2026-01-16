@@ -32,6 +32,27 @@ export const Dashboard = () => {
     setExpandedLines(initialState);
   }, [productionLines]);
 
+  const handleDeleteMachine = async (machineId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3001/machines/${machineId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        console.log('✅ Equipamento apagado com sucesso');
+        // Voltar ao dashboard
+        setSelectedMachine(null);
+        // Recarregar máquinas
+        fetchMachines();
+      } else {
+        throw new Error('Erro ao apagar equipamento');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao apagar:', error);
+      throw error;
+    }
+  };
+
   const handleExpandAll = () => {
     const allExpanded: Record<string, boolean> = {};
     productionLines.forEach(line => {
@@ -90,7 +111,8 @@ export const Dashboard = () => {
     return (
       <MachineDetail 
         machine={selectedMachine} 
-        onBack={() => setSelectedMachine(null)} 
+        onBack={() => setSelectedMachine(null)}
+        onDelete={canAddMachine ? handleDeleteMachine : undefined}
       />
     );
   }

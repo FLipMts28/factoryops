@@ -47,23 +47,45 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
+const class_validator_1 = require("class-validator");
 const users_service_1 = require("../users/users.service");
 const bcrypt = __importStar(require("bcrypt"));
 class LoginDto {
 }
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], LoginDto.prototype, "username", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], LoginDto.prototype, "password", void 0);
 let AuthController = class AuthController {
     constructor(usersService) {
         this.usersService = usersService;
     }
     async login(loginDto) {
+        console.log('🔐 Login request recebido:', JSON.stringify(loginDto));
+        console.log('🔐 Username:', loginDto.username);
+        console.log('🔐 Password:', loginDto.password ? '***' : 'undefined');
+        if (!loginDto.username || !loginDto.password) {
+            console.log('❌ Username ou password em falta');
+            throw new common_1.HttpException('Username e password são obrigatórios', common_1.HttpStatus.BAD_REQUEST);
+        }
         const user = await this.usersService.findByUsername(loginDto.username);
         if (!user) {
+            console.log('❌ User não encontrado:', loginDto.username);
             throw new common_1.HttpException('Credenciais inválidas', common_1.HttpStatus.UNAUTHORIZED);
         }
+        console.log('✅ User encontrado:', user.username);
         const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
         if (!isPasswordValid) {
+            console.log('❌ Password inválida para:', loginDto.username);
             throw new common_1.HttpException('Credenciais inválidas', common_1.HttpStatus.UNAUTHORIZED);
         }
+        console.log('✅ Login bem-sucedido:', user.username);
         const { password: _, ...userWithoutPassword } = user;
         return {
             success: true,

@@ -81,4 +81,34 @@ export class MachinesService {
       return this.updateStatus(randomMachine.id, randomStatus);
     }
   }
+
+  async remove(id: string) {
+    // Verificar se máquina existe
+    const machine = await this.findOne(id);
+    
+    if (!machine) {
+      throw new Error('Máquina não encontrada');
+    }
+
+    // Deletar máquina primeiro (cascade remove anotações e mensagens)
+    await this.prisma.machine.delete({
+      where: { id },
+    });
+
+    // Log do evento SEM machineId (máquina já não existe)
+    await this.prisma.eventLog.create({
+      data: {
+        eventType: 'MACHINE_STATUS_CHANGE',
+        description: `Machine ${machine.name} (${machine.code}) was deleted`,
+        metadata: { 
+          action: 'DELETE', 
+          machineName: machine.name,
+          machineCode: machine.code,
+          deletedMachineId: id, // Salvar ID no metadata
+        },
+      },
+    });
+
+    return { success: true, message: 'Máquina deletada com sucesso' };
+  }
 }

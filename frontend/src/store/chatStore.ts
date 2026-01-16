@@ -4,17 +4,22 @@ import { ChatMessage } from '../types';
 interface ChatStore {
   messages: ChatMessage[];
   typingUsers: string[];
+  unreadCounts: Record<string, number>; // machineId -> count
   
   setMessages: (messages: ChatMessage[]) => void;
   addMessage: (message: ChatMessage) => void;
   addTypingUser: (userName: string) => void;
   removeTypingUser: (userName: string) => void;
   clearMessages: () => void;
+  incrementUnread: (machineId: string) => void;
+  clearUnread: (machineId: string) => void;
+  getUnreadCount: (machineId: string) => number;
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   typingUsers: [],
+  unreadCounts: {},
 
   setMessages: (messages) => {
     set({ messages });
@@ -42,5 +47,27 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   clearMessages: () => {
     set({ messages: [], typingUsers: [] });
+  },
+
+  incrementUnread: (machineId) => {
+    set((state) => ({
+      unreadCounts: {
+        ...state.unreadCounts,
+        [machineId]: (state.unreadCounts[machineId] || 0) + 1,
+      },
+    }));
+  },
+
+  clearUnread: (machineId) => {
+    set((state) => ({
+      unreadCounts: {
+        ...state.unreadCounts,
+        [machineId]: 0,
+      },
+    }));
+  },
+
+  getUnreadCount: (machineId) => {
+    return get().unreadCounts[machineId] || 0;
   },
 }));

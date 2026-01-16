@@ -33,6 +33,9 @@ let MachinesController = class MachinesController {
     async updateStatus(id, updateStatusDto) {
         return this.machinesService.updateStatus(id, updateStatusDto.status);
     }
+    async remove(id) {
+        return this.machinesService.remove(id);
+    }
 };
 exports.MachinesController = MachinesController;
 __decorate([
@@ -63,6 +66,13 @@ __decorate([
     __metadata("design:paramtypes", [String, update_machine_status_dto_1.UpdateMachineStatusDto]),
     __metadata("design:returntype", Promise)
 ], MachinesController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], MachinesController.prototype, "remove", null);
 exports.MachinesController = MachinesController = __decorate([
     (0, common_1.Controller)('machines'),
     __metadata("design:paramtypes", [machines_service_1.MachinesService])

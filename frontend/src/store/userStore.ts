@@ -157,12 +157,17 @@ export const useUserStore = create<UserStore>((set, get) => ({
           
           console.log('✅ Login bem-sucedido via API:', user.name);
           return true;
+        } else if (response.status === 401) {
+          // Credenciais inválidas - NÃO usar fallback
+          console.log('❌ Credenciais inválidas');
+          return false;
         }
+        // Se for outro erro (500, etc), tentar fallback
       } catch (apiError) {
-        console.warn('⚠️  API de login não disponível, usando mock');
+        console.warn('⚠️  API de login não disponível, usando mock fallback');
       }
 
-      // Fallback para MOCK (desenvolvimento)
+      // Fallback para MOCK (só se API não responder)
       if (MOCK_CREDENTIALS[username as keyof typeof MOCK_CREDENTIALS] !== password) {
         return false;
       }
@@ -179,7 +184,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         set({ currentUser: user, isAuthenticated: true });
         localStorage.setItem('factoryops_current_user_id', user.id);
         localStorage.setItem('factoryops_is_authenticated', 'true');
-        console.log('✅ Login bem-sucedido:', user.name);
+        console.log('✅ Login bem-sucedido via MOCK:', user.name);
         return true;
       }
 

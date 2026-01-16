@@ -6,46 +6,46 @@ export declare class MachinesService {
     constructor(prisma: PrismaService);
     create(createMachineDto: CreateMachineDto): Promise<{
         productionLine: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
+        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        productionLineId: string;
         schemaImageUrl: string | null;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        productionLineId: string;
     }>;
     findAll(): Promise<({
         productionLine: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
+        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        productionLineId: string;
         schemaImageUrl: string | null;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        productionLineId: string;
     })[]>;
     findOne(id: string): Promise<{
         productionLine: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
@@ -53,8 +53,8 @@ export declare class MachinesService {
         };
         annotations: ({
             user: {
-                name: string;
                 id: string;
+                name: string;
                 createdAt: Date;
                 username: string;
                 password: string;
@@ -70,51 +70,55 @@ export declare class MachinesService {
             userId: string;
         })[];
     } & {
+        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        productionLineId: string;
         schemaImageUrl: string | null;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        productionLineId: string;
     }>;
     updateStatus(id: string, status: MachineStatus): Promise<{
         productionLine: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
+        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        productionLineId: string;
         schemaImageUrl: string | null;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        productionLineId: string;
     }>;
     simulateStatusChanges(): Promise<{
         productionLine: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             isActive: boolean;
         };
     } & {
+        id: string;
         name: string;
         code: string;
         status: import(".prisma/client").$Enums.MachineStatus;
-        productionLineId: string;
         schemaImageUrl: string | null;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        productionLineId: string;
+    }>;
+    remove(id: string): Promise<{
+        success: boolean;
+        message: string;
     }>;
 }

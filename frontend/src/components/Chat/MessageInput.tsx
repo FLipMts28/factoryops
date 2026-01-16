@@ -17,6 +17,7 @@ export const MessageInput = ({ onSend, onTyping }: MessageInputProps) => {
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      e.preventDefault(); // ✅ Prevenir submit/scroll da página
       handleSend();
     } else {
       onTyping();
