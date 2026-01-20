@@ -1,0 +1,358 @@
+# 🐛 Correções Múltiplas - UserManagement, Backend Integration e NavBar
+
+## 📋 Problemas Resolvidos
+
+### 1. ✅ **UserManagement - Estilo Inconsistente**
+### 2. ✅ **Utilizadores Hardcoded - Integração com Backend**
+### 3. ✅ **UserSelector Removido da NavBar**
+
+---
+
+## 1. 🎨 UserManagement - Estilo Consistente
+
+### Problema:
+- Estilo destoado dos outros componentes
+- Modo Light muito escuro
+- Headers sem texto branco
+- Badges sem cores adaptáveis
+
+### Solução:
+Componente completamente reescrito com:
+- ✅ **Headers com gradiente azul** + texto sempre branco (`!text-white`)
+- ✅ **Modo Light claro** com backgrounds `bg-white` e `bg-gray-50`
+- ✅ **Gradientes suaves** consistentes com resto da app
+- ✅ **Badges tema-aware** (cores diferentes dark/light)
+- ✅ **Formulários com borda** e focus rings
+- ✅ **Cards hover effects** e shadows
+- ✅ **Botões com gradientes** verdes/azuis
+
+### Cores Aplicadas:
+
+**Header:**
+```typescript
+bg-gradient-to-r from-blue-600 to-indigo-600
+!text-white // Sempre branco
+!text-blue-100 // Subtítulo
+```
+
+**Light Mode:**
+```typescript
+bg-white // Cards
+bg-gray-50 // Formulários
+border-gray-200 / border-gray-300
+text-gray-900 // Títulos
+text-gray-700 / text-gray-600 // Texto
+```
+
+**Dark Mode:**
+```typescript
+bg-gray-800/50 // Cards
+bg-gray-700 // Inputs
+border-gray-700
+text-white // Títulos
+text-gray-300 / text-gray-400 // Texto
+```
+
+---
+
+## 2. 🔗 Integração com Backend - Users Module
+
+### Problema:
+- Utilizadores salvos apenas no `localStorage`
+- Nenhuma integração com backend
+- Dados perdidos entre sessões
+- Sem validação server-side
+
+### Solução Backend:
+
+#### Ficheiros Criados:
+
+```
+backend/src/modules/users/
+├── dto/
+│   ├── create-user.dto.ts       ✅ NOVO
+│   └── update-user.dto.ts       ✅ NOVO
+├── users.controller.ts          ✅ NOVO
+├── users.service.ts             ✅ NOVO
+└── users.module.ts              ✅ NOVO
+
+backend/src/app.module.ts        ✅ MODIFICADO
+```
+
+#### Endpoints Criados:
+
+```typescript
+POST   /users          // Criar utilizador
+GET    /users          // Listar todos
+GET    /users/:id      // Ver um utilizador
+PUT    /users/:id      // Atualizar
+DELETE /users/:id      // Eliminar
+```
+
+#### Validações Implementadas:
+
+**CreateUserDto:**
+```typescript
+@IsString() username
+@IsString() name
+@IsString() @MinLength(6) password
+@IsEnum(UserRole) role
+```
+
+**Segurança:**
+- ✅ Password hasheada com bcrypt (10 rounds)
+- ✅ Password NUNCA retornada nas respostas
+- ✅ Username único (constraint DB)
+- ✅ Validação mínimo 6 caracteres
+
+### Solução Frontend:
+
+#### API Service:
+```typescript
+// services/api.ts
+export const usersApi = {
+  getAll: () => api.get('/users'),
+  getOne: (id) => api.get(`/users/${id}`),
+  create: (data) => api.post('/users', data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+};
+```
+
+#### UserManagement Component:
+- ✅ Busca users do backend (`fetchUsers()`)
+- ✅ Cria users no backend (`handleAddUser()`)
+- ✅ Atualiza users no backend (`handleUpdateUser()`)
+- ✅ Elimina users no backend (`handleDeleteUser()`)
+- ✅ Loading state enquanto busca
+- ✅ Error handling com mensagens claras
+- ✅ Validação frontend (6+ caracteres)
+
+---
+
+## 3. 🗑️ UserSelector Removido da NavBar
+
+### Problema:
+- UserSelector desnecessário após login page
+- Usuário já autenticado
+- Confusão na interface
+
+### Solução:
+
+**Navbar.tsx:**
+- ❌ Removido `<UserSelector />`
+- ❌ Removido `import { UserSelector } from './UserSelector'`
+- ✅ Adicionado display do utilizador atual
+
+**Novo Display:**
+```tsx
+{currentUser && (
+  <div className="flex items-center space-x-3">
+    <div className="w-8 h-8 rounded-full bg-gradient">
+      {initials}
+    </div>
+    <div>
+      <p>{currentUser.name}</p>
+      <p>{currentUser.role}</p>
+    </div>
+  </div>
+)}
+```
+
+---
+
+## 📊 Comparação: Antes vs Depois
+
+### UserManagement - Antes ❌
+
+**Estilo:**
+- Fundo sempre escuro (dark mode only)
+- Headers cinzentos
+- Texto cinzento/branco misturado
+- Sem consistência com outros componentes
+
+**Dados:**
+- localStorage apenas
+- Sem validação backend
+- Passwords em plain text
+- Dados voláteis
+
+**NavBar:**
+- UserSelector com dropdown
+- Troca de usuário manual
+- Desnecessário pós-login
+
+### UserManagement - Depois ✅
+
+**Estilo:**
+- Light mode claro e limpo
+- Dark mode consistente
+- Headers azuis com texto branco
+- Gradientes profissionais
+- 100% consistente com resto da app
+
+**Dados:**
+- PostgreSQL via Prisma
+- Validação backend completa
+- Passwords hasheadas (bcrypt)
+- Dados persistentes
+- CRUD completo
+
+**NavBar:**
+- Display simples do user atual
+- Avatar + nome + role
+- Limpo e funcional
+
+---
+
+## 🔄 Fluxo Completo - Criar Utilizador
+
+```
+1. Admin abre "Gestão de Utilizadores"
+2. Clica "Adicionar Novo Utilizador"
+3. Preenche formulário:
+   - Username: joao.silva
+   - Nome: João Silva
+   - Role: ENGINEER
+   - Password: senha123
+
+↓ FRONTEND VALIDATION
+4. Verifica campos obrigatórios
+5. Verifica password >= 6 chars
+6. POST /users
+
+↓ BACKEND
+7. UsersController.create()
+8. Valida CreateUserDto
+9. Verifica username único
+10. Hash password (bcrypt)
+11. Prisma.user.create()
+12. Retorna user (sem password)
+
+↓ FRONTEND
+13. Recebe resposta
+14. Alert sucesso
+15. Recarrega lista (fetchUsers)
+16. Fecha formulário
+
+✅ RESULTADO
+17. User salvo em PostgreSQL
+18. Aparece na lista
+19. Pode fazer login
+20. Persiste após reload
+```
+
+---
+
+## 📁 Ficheiros Modificados/Criados
+
+### Backend:
+```
+src/modules/users/
+├── dto/
+│   ├── create-user.dto.ts       ✅ NOVO (23 linhas)
+│   └── update-user.dto.ts       ✅ NOVO (15 linhas)
+├── users.controller.ts          ✅ NOVO (34 linhas)
+├── users.service.ts             ✅ NOVO (125 linhas)
+└── users.module.ts              ✅ NOVO (13 linhas)
+
+src/app.module.ts                ✅ MODIFICADO (+2 linhas)
+```
+
+### Frontend:
+```
+services/
+└── api.ts                       ✅ MODIFICADO (+7 linhas)
+
+components/Admin/
+└── UserManagement.tsx           ✅ REESCRITO (450 linhas)
+
+components/Layout/
+└── Navbar.tsx                   ✅ MODIFICADO (+15, -5 linhas)
+```
+
+**Total:**
+- Backend: ~210 linhas novas
+- Frontend: ~460 linhas novas/modificadas
+
+---
+
+## ✅ Testes Recomendados
+
+### Teste 1: UserManagement Light Mode
+1. Trocar para light mode
+2. Abrir Gestão de Utilizadores
+3. **Verificar:** Background branco/claro
+4. **Verificar:** Header azul com texto branco
+5. **Verificar:** Formulários legíveis
+6. **Verificar:** Badges com cores claras
+
+### Teste 2: Criar Utilizador
+1. Clicar "Adicionar Novo Utilizador"
+2. Preencher todos os campos
+3. Password < 6 chars
+4. **Verificar:** Erro de validação
+5. Password >= 6 chars
+6. Submeter
+7. **Verificar:** Sucesso
+8. **Verificar:** User aparece na lista
+
+### Teste 3: Username Duplicado
+1. Criar user com username "admin"
+2. Tentar criar outro com "admin"
+3. **Verificar:** Erro "Username já existe"
+
+### Teste 4: Editar Utilizador
+1. Clicar "Editar" em um user
+2. Mudar nome e role
+3. Deixar password vazio
+4. Submeter
+5. **Verificar:** Atualizado sem alterar password
+
+### Teste 5: Eliminar Próprio User
+1. Tentar eliminar seu próprio user
+2. **Verificar:** Bloqueado
+3. **Verificar:** Mensagem de erro
+
+### Teste 6: NavBar
+1. Fazer login
+2. **Verificar:** Display do user atual
+3. **Verificar:** Avatar com iniciais
+4. **Verificar:** Nome e role visíveis
+5. **Verificar:** Sem UserSelector dropdown
+
+### Teste 7: Persistência
+1. Criar utilizador
+2. Recarregar página
+3. Reabrir Gestão de Utilizadores
+4. **Verificar:** User continua lá
+5. Reiniciar backend
+6. **Verificar:** User ainda existe
+
+---
+
+## 🎉 Resultado Final
+
+✅ **UserManagement com Estilo Consistente**
+- Light mode claro e profissional
+- Dark mode elegante
+- Headers com texto branco
+- Gradientes suaves
+
+✅ **Integração Completa com Backend**
+- CRUD funcional
+- Validações robustas
+- Passwords seguras
+- Dados persistentes
+
+✅ **NavBar Simplificada**
+- Display limpo do user
+- Sem seletor desnecessário
+- Melhor UX pós-login
+
+---
+
+**Versão:** 1.6.0  
+**Data:** Janeiro 2025  
+**Tipo:** Bug Fixes + Backend Integration + UX Improvements
+**Prioridade:** 🔴 ALTA
