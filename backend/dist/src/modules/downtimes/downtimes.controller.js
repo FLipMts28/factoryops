@@ -30,6 +30,10 @@ let DowntimesController = class DowntimesController {
     async findAll() {
         return this.downtimesService.findAll();
     }
+    async closeDowntime(id, body) {
+        console.log(`🔒 PATCH /downtimes/${id}/close - Fechando paragem`);
+        return this.downtimesService.closeDowntime(id, body.endTime);
+    }
 };
 exports.DowntimesController = DowntimesController;
 __decorate([
@@ -52,6 +56,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DowntimesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Patch)(':id/close'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], DowntimesController.prototype, "closeDowntime", null);
 exports.DowntimesController = DowntimesController = __decorate([
     (0, common_1.Controller)('downtimes'),
     __metadata("design:paramtypes", [downtimes_service_1.DowntimesService])

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Machine } from '../../types';
+import { useUserStore } from '../../store/userStore';
 
 interface Downtime {
   id: string;
@@ -11,6 +12,10 @@ interface Downtime {
   notes?: string;
   userId: string;
   userName?: string;
+  user?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface MachineDowntimeProps {
@@ -29,9 +34,11 @@ const DOWNTIME_REASONS = [
 ];
 
 export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
+  const { currentUser } = useUserStore();
   const [downtimes, setDowntimes] = useState<Downtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   
   // Form state
   const [reason, setReason] = useState('');
@@ -66,22 +73,38 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
       return;
     }
 
+    if (!currentUser) {
+      alert('❌ ERRO: Nenhum utilizador selecionado!\n\nPor favor, selecione um utilizador na barra lateral antes de registar paragens.');
+      return;
+    }
+
+    if (!currentUser.id) {
+      alert('❌ ERRO: ID do utilizador inválido!');
+      console.error('❌ currentUser sem ID:', currentUser);
+      return;
+    }
+
+    const payload = {
+      machineId: machine.id,
+      reason,
+      startTime: new Date(startTime).toISOString(),
+      endTime: endTime ? new Date(endTime).toISOString() : undefined,
+      notes: notes || undefined,
+      userId: currentUser.id,
+    };
+
+    console.log('📤 Enviando paragem:', payload);
+
     try {
       const response = await fetch('http://localhost:3001/downtimes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          machineId: machine.id,
-          reason,
-          startTime: new Date(startTime).toISOString(),
-          endTime: endTime ? new Date(endTime).toISOString() : undefined,
-          notes,
-          userId: 'current-user-id', // TODO: Pegar do userStore
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const newDowntime = await response.json();
+        console.log('✅ Paragem criada:', newDowntime);
         setDowntimes([newDowntime, ...downtimes]);
         
         // Resetar form
@@ -92,11 +115,59 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
         setShowForm(false);
         
         alert('✅ Paragem registada com sucesso!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Erro do servidor:', errorData);
+        alert(`❌ Erro ao registar paragem:\n${errorData.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
-      console.error('Erro ao registar paragem:', error);
-      alert('❌ Erro ao registar paragem');
+      console.error('❌ Erro ao registar paragem:', error);
+      alert('❌ Erro de conexão!\n\nVerifique se o backend está a funcionar.');
     }
+  };
+
+  const handleCloseDowntime = async (downtimeId: string) => {
+    if (!confirm('Deseja fechar esta paragem?\n\nA hora de fim será definida como agora.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/downtimes/${downtimeId}/close`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endTime: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        const updatedDowntime = await response.json();
+        console.log('✅ Paragem fechada:', updatedDowntime);
+        
+        // Atualizar lista
+        setDowntimes(downtimes.map(dt => 
+          dt.id === downtimeId ? updatedDowntime : dt
+        ));
+        
+        alert('✅ Paragem fechada com sucesso!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`❌ Erro ao fechar paragem:\n${errorData.message || 'Erro desconhecido'}`);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao fechar paragem:', error);
+      alert('❌ Erro de conexão!');
+    }
+  };
+
+  const toggleNotes = (downtimeId: string) => {
+    const newExpanded = new Set(expandedNotes);
+    if (newExpanded.has(downtimeId)) {
+      newExpanded.delete(downtimeId);
+    } else {
+      newExpanded.add(downtimeId);
+    }
+    setExpandedNotes(newExpanded);
   };
 
   const formatDuration = (minutes: number): string => {
@@ -125,6 +196,26 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Aviso se não tiver utilizador */}
+      {!currentUser && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong className="font-semibold">⚠️ Atenção:</strong> Nenhum utilizador selecionado! 
+                <br />
+                Selecione um utilizador na barra lateral para registar paragens.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between">
@@ -135,10 +226,21 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
             <p className="text-red-100">
               Equipamento: {machine.name} ({machine.code})
             </p>
+            {currentUser && (
+              <p className="text-red-200 text-sm mt-1">
+                👤 Utilizador: {currentUser.name}
+              </p>
+            )}
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-6 py-3 bg-white text-red-700 font-semibold rounded-lg hover:bg-red-50 transition-colors shadow-lg"
+            disabled={!currentUser}
+            className={`px-6 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
+              currentUser
+                ? 'bg-white text-red-700 hover:bg-red-50'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+            title={!currentUser ? 'Selecione um utilizador primeiro' : ''}
           >
             {showForm ? '❌ Cancelar' : '➕ Nova Paragem'}
           </button>
@@ -146,7 +248,7 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
       </div>
 
       {/* Form */}
-      {showForm && (
+      {showForm && currentUser && (
         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-red-300">
           <h4 className="text-lg font-semibold mb-4 text-gray-800">
             Registar Nova Paragem
@@ -189,7 +291,7 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fim (opcional)
+                  Fim (opcional - deixe vazio se em curso)
                 </label>
                 <input
                   type="datetime-local"
@@ -270,33 +372,88 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
                     Duração
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                    Registado por
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
                     Observações
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                    Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {downtimes.map((dt) => (
-                  <tr key={dt.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                        {getReasonLabel(dt.reason)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {formatDateTime(dt.startTime)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {dt.endTime ? formatDateTime(dt.endTime) : (
-                        <span className="text-yellow-600 font-medium">Em curso</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                      {dt.duration ? formatDuration(dt.duration) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {dt.notes || '—'}
-                    </td>
-                  </tr>
+                  <>
+                    <tr key={dt.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                          {getReasonLabel(dt.reason)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {formatDateTime(dt.startTime)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {dt.endTime ? (
+                          formatDateTime(dt.endTime)
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                            ⏳ Em curso
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                        {dt.duration ? formatDuration(dt.duration) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {dt.user?.name || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {dt.notes ? (
+                          <button
+                            onClick={() => toggleNotes(dt.id)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            {expandedNotes.has(dt.id) ? 'Ocultar' : 'Ver notas'}
+                          </button>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {!dt.endTime && (
+                          <button
+                            onClick={() => handleCloseDowntime(dt.id)}
+                            className="px-3 py-1 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors"
+                            title="Fechar paragem (define fim como agora)"
+                          >
+                            ✓ Fechar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                    {/* Linha expandida com notas */}
+                    {expandedNotes.has(dt.id) && dt.notes && (
+                      <tr className="bg-blue-50">
+                        <td colSpan={7} className="px-4 py-3">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-semibold text-blue-900 mb-1">Observações:</p>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{dt.notes}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>

@@ -56,4 +56,22 @@ export declare class DowntimesController {
         userId: string;
         createdAt: Date;
     })[]>;
+    closeDowntime(id: string, body: {
+        endTime: string;
+    }): Promise<{
+        user: {
+            id: string;
+            name: string;
+        };
+    } & {
+        id: string;
+        machineId: string;
+        reason: string;
+        startTime: Date;
+        endTime: Date | null;
+        duration: number | null;
+        notes: string | null;
+        userId: string;
+        createdAt: Date;
+    }>;
 }

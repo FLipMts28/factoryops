@@ -101,4 +101,44 @@ export class DowntimesService {
       },
     });
   }
+
+  async closeDowntime(id: string, endTimeString: string) {
+    console.log(`🔒 Fechando paragem ${id} com endTime: ${endTimeString}`);
+
+    const downtime = await this.prisma.downtime.findUnique({
+      where: { id },
+    });
+
+    if (!downtime) {
+      throw new Error('Paragem não encontrada');
+    }
+
+    if (downtime.endTime) {
+      throw new Error('Paragem já está fechada');
+    }
+
+    const startTime = new Date(downtime.startTime);
+    const endTime = new Date(endTimeString);
+
+    // Calcular duração em minutos
+    const duration = Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+
+    console.log(`⏱️  Duração calculada: ${duration} minutos`);
+
+    return this.prisma.downtime.update({
+      where: { id },
+      data: {
+        endTime,
+        duration,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
 }

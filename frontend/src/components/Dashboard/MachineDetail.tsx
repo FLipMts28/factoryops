@@ -1,348 +1,159 @@
-import { useState, useEffect } from 'react';
 import { Machine } from '../../types';
-import { useUserStore } from '../../store/userStore';
+import { MachineStatusBadge } from './MachineStatusBadge';
+import { AnnotationCanvas } from '../Canvas/AnnotationCanvas';
+import { ChatPanel } from '../Chat/ChatPanel';
+import { DocumentUpload } from '../Documents/DocumentUpload';
+import { MachineDowntime } from '../Downtime/MachineDowntime';
+import { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 
-interface Downtime {
-  id: string;
-  machineId: string;
-  reason: string;
-  startTime: string;
-  endTime?: string;
-  duration?: number;
-  notes?: string;
-  userId: string;
-  userName?: string;
-}
-
-interface MachineDowntimeProps {
+interface MachineDetailProps {
   machine: Machine;
+  onBack: () => void;
+  onDelete?: (machineId: string) => void;
 }
 
-const DOWNTIME_REASONS = [
-  { value: 'BREAKDOWN', label: 'Avaria Mecânica', icon: '🔧' },
-  { value: 'MAINTENANCE', label: 'Manutenção Preventiva', icon: '🛠️' },
-  { value: 'SETUP', label: 'Setup/Mudança de Ferramenta', icon: '⚙️' },
-  { value: 'NO_MATERIAL', label: 'Falta de Material', icon: '📦' },
-  { value: 'NO_OPERATOR', label: 'Falta de Operador', icon: '👷' },
-  { value: 'QUALITY_ISSUE', label: 'Problema de Qualidade', icon: '❌' },
-  { value: 'ELECTRICAL', label: 'Problema Elétrico', icon: '⚡' },
-  { value: 'OTHER', label: 'Outro', icon: '📝' },
-];
+export const MachineDetail = ({ machine, onBack, onDelete }: MachineDetailProps) => {
+  const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState<'canvas' | 'chat' | 'documents' | 'downtimes'>('canvas');
 
-export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
-  const { currentUser } = useUserStore();
-  const [downtimes, setDowntimes] = useState<Downtime[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  
-  // Form state
-  const [reason, setReason] = useState('');
-  const [notes, setNotes] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const handleDelete = async () => {
+    if (!onDelete) return;
 
-  useEffect(() => {
-    loadDowntimes();
-  }, [machine.id]);
-
-  const loadDowntimes = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:3001/downtimes/machine/${machine.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDowntimes(data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar paragens:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const confirmMessage = `Tem certeza que deseja apagar "${machine.name}"?\n\nEsta ação não pode ser desfeita e irá remover:\n- Todas as anotações\n- Todas as mensagens do chat\n- Todos os documentos\n\nDigite o código do equipamento (${machine.code}) para confirmar:`;
     
-    if (!reason || !startTime) {
-      alert('Preencha a razão e hora de início!');
-      return;
-    }
-
-    if (!currentUser) {
-      alert('❌ Erro: Utilizador não identificado. Por favor, faça login novamente.');
-      return;
-    }
-
-    try {
-      const payload = {
-        machineId: machine.id,
-        reason,
-        startTime: new Date(startTime).toISOString(),
-        endTime: endTime ? new Date(endTime).toISOString() : undefined,
-        notes: notes || undefined,
-        userId: currentUser.id,
-      };
-
-      console.log('📤 Enviando paragem:', payload);
-
-      const response = await fetch('http://localhost:3001/downtimes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const newDowntime = await response.json();
-        console.log('✅ Paragem criada:', newDowntime);
-        setDowntimes([newDowntime, ...downtimes]);
-        
-        // Resetar form
-        setReason('');
-        setNotes('');
-        setStartTime('');
-        setEndTime('');
-        setShowForm(false);
-        
-        alert('✅ Paragem registada com sucesso!');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro do servidor:', errorData);
-        alert(`❌ Erro ao registar paragem: ${errorData.message || 'Erro desconhecido'}`);
+    const userInput = prompt(confirmMessage);
+    
+    if (userInput === machine.code) {
+      try {
+        await onDelete(machine.id);
+      } catch (error) {
+        alert('Erro ao apagar equipamento. Tente novamente.');
       }
-    } catch (error) {
-      console.error('❌ Erro ao registar paragem:', error);
-      alert('❌ Erro de conexão. Verifique se o backend está a funcionar.');
+    } else if (userInput !== null) {
+      alert('Código incorreto. Equipamento não foi apagado.');
     }
-  };
-
-  const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return `${hours}h ${mins}m`;
-    }
-    return `${mins}m`;
-  };
-
-  const formatDateTime = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-PT', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getReasonLabel = (reason: string) => {
-    const found = DOWNTIME_REASONS.find(r => r.value === reason);
-    return found ? `${found.icon} ${found.label}` : reason;
   };
 
   return (
     <div className="space-y-4">
-      {/* Aviso se não tiver usuário logado */}
-      {!currentUser && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      {/* Header - inline styles para GARANTIR texto branco */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 p-6 shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full filter blur-3xl opacity-20 -mr-48 -mt-48"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={onBack}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+              style={{ color: '#dbeafe' }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                <strong>Atenção:</strong> Nenhum utilizador selecionado. Selecione um utilizador na barra lateral para registar paragens.
-              </p>
+              <span>Voltar</span>
+            </button>
+            
+            <div className="flex items-center space-x-3">
+              <MachineStatusBadge status={machine.status} size="lg" />
+              
+              {/* Botão Delete */}
+              {onDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg"
+                  title="Apagar Equipamento"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Apagar</span>
+                </button>
+              )}
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 rounded-xl shadow-lg">
-        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-white mb-1">
-              📊 Registo de Paragens
-            </h3>
-            <p className="text-red-100">
-              Equipamento: {machine.name} ({machine.code})
-            </p>
+            <h2 style={{ color: '#ffffff' }} className="text-3xl font-bold">{machine.name}</h2>
+            <p style={{ color: '#dbeafe' }} className="mt-1">Código: {machine.code}</p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            disabled={!currentUser}
-            className={`px-6 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
-              currentUser 
-                ? 'bg-white text-red-700 hover:bg-red-50' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            title={!currentUser ? 'Selecione um utilizador primeiro' : ''}
-          >
-            {showForm ? '❌ Cancelar' : '➕ Nova Paragem'}
-          </button>
+
+          {/* Tabs - fundo escuro com texto branco */}
+          <div className="mt-6">
+            <div style={{ background: 'linear-gradient(to right, #1f2937, #111827)', borderColor: '#374151' }} className="rounded-xl border p-1.5 inline-flex">
+              <button
+                onClick={() => setActiveTab('canvas')}
+                style={{ color: '#ffffff' }}
+                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'canvas'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg shadow-blue-900/50'
+                    : 'hover:bg-gray-700/50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  <span>Anotações</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('chat')}
+                style={{ color: '#ffffff' }}
+                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'chat'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg shadow-blue-900/50'
+                    : 'hover:bg-gray-700/50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span>Chat</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('documents')}
+                style={{ color: '#ffffff' }}
+                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'documents'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg shadow-blue-900/50'
+                    : 'hover:bg-gray-700/50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span>Documentos</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('downtimes')}
+                style={{ color: '#ffffff' }}
+                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
+                  activeTab === 'downtimes'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg shadow-blue-900/50'
+                    : 'hover:bg-gray-700/50'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Paragens</span>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-red-300">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800">
-            Registar Nova Paragem
-          </h4>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Razão */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Razão da Paragem *
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                required
-              >
-                <option value="">Selecione...</option>
-                {DOWNTIME_REASONS.map(r => (
-                  <option key={r.value} value={r.value}>
-                    {r.icon} {r.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Horários */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Início *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fim (opcional)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Notas */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Observações
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                placeholder="Descrição do problema, ações tomadas, etc..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-              />
-            </div>
-
-            {/* Botões */}
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
-              >
-                💾 Registar Paragem
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Lista de Paragens */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-800">
-            Histórico de Paragens ({downtimes.length})
-          </h4>
-        </div>
-
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-            Carregando paragens...
-          </div>
-        ) : downtimes.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <p className="text-lg">📊 Nenhuma paragem registada</p>
-            <p className="text-sm mt-2">Clique em "Nova Paragem" para adicionar</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                    Razão
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                    Início
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                    Fim
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                    Duração
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                    Observações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {downtimes.map((dt) => (
-                  <tr key={dt.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                        {getReasonLabel(dt.reason)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {formatDateTime(dt.startTime)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {dt.endTime ? formatDateTime(dt.endTime) : (
-                        <span className="text-yellow-600 font-medium">Em curso</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                      {dt.duration ? formatDuration(dt.duration) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {dt.notes || '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Content */}
+      {activeTab === 'canvas' && <AnnotationCanvas machine={machine} />}
+      {activeTab === 'chat' && <ChatPanel machineId={machine.id} />}
+      {activeTab === 'documents' && <DocumentUpload machine={machine} />}
+      {activeTab === 'downtimes' && <MachineDowntime machine={machine} />}
     </div>
   );
 };

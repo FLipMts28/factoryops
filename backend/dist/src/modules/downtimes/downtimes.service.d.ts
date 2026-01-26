@@ -56,4 +56,20 @@ export declare class DowntimesService {
         userId: string;
         createdAt: Date;
     })[]>;
+    closeDowntime(id: string, endTimeString: string): Promise<{
+        user: {
+            id: string;
+            name: string;
+        };
+    } & {
+        id: string;
+        machineId: string;
+        reason: string;
+        startTime: Date;
+        endTime: Date | null;
+        duration: number | null;
+        notes: string | null;
+        userId: string;
+        createdAt: Date;
+    }>;
 }

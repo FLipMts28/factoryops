@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { DowntimesService } from './downtimes.service';
 import { CreateDowntimeDto } from './dto/create-downtime.dto';
 
@@ -21,4 +21,14 @@ export class DowntimesController {
   async findAll() {
     return this.downtimesService.findAll();
   }
+
+  @Patch(':id/close')
+  async closeDowntime(
+    @Param('id') id: string,
+    @Body() body: { endTime: string },
+  ) {
+    console.log(`🔒 PATCH /downtimes/${id}/close - Fechando paragem`);
+    return this.downtimesService.closeDowntime(id, body.endTime);
+  }
 }
+
