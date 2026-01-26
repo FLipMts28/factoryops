@@ -4,18 +4,18 @@ export declare class ProductionLinesController {
     constructor(productionLinesService: ProductionLinesService);
     findAll(): Promise<({
         machines: {
+            id: string;
             name: string;
             code: string;
             status: import(".prisma/client").$Enums.MachineStatus;
-            productionLineId: string;
             schemaImageUrl: string | null;
-            id: string;
             createdAt: Date;
             updatedAt: Date;
+            productionLineId: string;
         }[];
     } & {
-        name: string;
         id: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
@@ -33,18 +33,18 @@ export declare class ProductionLinesController {
                 userId: string;
             }[];
         } & {
+            id: string;
             name: string;
             code: string;
             status: import(".prisma/client").$Enums.MachineStatus;
-            productionLineId: string;
             schemaImageUrl: string | null;
-            id: string;
             createdAt: Date;
             updatedAt: Date;
+            productionLineId: string;
         })[];
     } & {
-        name: string;
         id: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
         description: string | null;

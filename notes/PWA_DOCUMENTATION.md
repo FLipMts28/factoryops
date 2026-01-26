@@ -379,7 +379,7 @@ webpush.sendNotification(subscription, {
 - Alertas em tempo real
 - Mesmo app fechado
 - Push notifications
-- Engajamento maior
+- Maior alcance
 
 ---
 

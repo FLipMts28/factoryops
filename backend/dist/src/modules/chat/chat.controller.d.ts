@@ -4,8 +4,8 @@ export declare class ChatController {
     constructor(chatService: ChatService);
     getMessagesByMachine(machineId: string): Promise<({
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;

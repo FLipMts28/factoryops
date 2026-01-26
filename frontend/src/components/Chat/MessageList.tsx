@@ -10,11 +10,13 @@ interface MessageListProps {
 
 export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
   const { typingUsers } = useChatStore();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll quando mensagens mudam
+  // Auto-scroll APENAS no container de mensagens (não na página toda!)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const formatTime = (dateString: string) => {
@@ -23,7 +25,10 @@ export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+    <div 
+      ref={messagesContainerRef}
+      className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50"
+    >
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full text-gray-500">
           <p>Nenhuma mensagem ainda. Seja o primeiro a escrever!</p>
@@ -73,9 +78,6 @@ export const MessageList = ({ messages, currentUserId }: MessageListProps) => {
           </div>
         </div>
       )}
-
-      {/* Âncora para auto-scroll */}
-      <div ref={messagesEndRef} />
     </div>
   );
 };

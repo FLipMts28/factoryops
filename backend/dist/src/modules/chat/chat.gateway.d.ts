@@ -14,8 +14,8 @@ export declare class ChatGateway implements OnGatewayConnection, OnGatewayDiscon
     handleLeaveChat(client: Socket, machineId: string): void;
     handleSendMessage(data: any): Promise<{
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;
