@@ -8,11 +8,11 @@
  * 
  * RESPONSABILIDADES:
  * - Armazenar array de anotações da máquina atual
- * - Buscar anotações do backend por machineId
+ * - Recolher anotações do backend por machineId
  * - Adicionar novas anotações (recebidas via WebSocket ou criadas localmente)
  * - Atualizar anotações existentes (quando user move/edita)
  * - Remover anotações (quando user apaga)
- * - Salvar anotações offline quando sem conexão
+ * - Salvar anotações offline  sem conexão
  * - Gerir estados de loading e erro
  * 
  * TIPOS DE ANOTAÇÃO:
@@ -31,7 +31,7 @@
  * 6. Outros users recebem via WebSocket → addAnnotation()
  * 
  * MODO OFFLINE:
- * - Se fetchAnnotations falhar, busca de IndexedDB
+ * - Se fetchAnnotations falhar, procura no IndexedDB
  * - Novas anotações salvas localmente
  * - Sincroniza quando voltar online
  */
@@ -117,7 +117,7 @@ interface AnnotationStore {
   // ==========================================
   
   /**
-   * fetchAnnotations: Buscar anotações de uma máquina
+   * fetchAnnotations: Recolhe as anotações de uma máquina
    * 
    * @param machineId - UUID da máquina
    * @returns Promise<void> - Assíncrono, não retorna valor
@@ -435,7 +435,7 @@ export const useAnnotationStore = create<AnnotationStore>((set, get) => ({
    * 
    * MÉTODO .filter():
    * Array.filter() cria novo array com elementos que passam teste
-   * - Itera sobre cada anotação (a)
+   * - Interage sobre cada anotação (a)
    * - Testa condição: a.id !== id
    * - Se TRUE: Incluir no novo array
    * - Se FALSE: Excluir (filtrar fora)
