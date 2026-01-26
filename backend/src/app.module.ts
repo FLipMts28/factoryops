@@ -5,6 +5,7 @@ import { AnnotationsModule } from './modules/annotations/annotations.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ProductionLinesModule } from './modules/production-lines/production-lines.module';
 import { UsersModule } from './modules/users/users.module';
+import { DowntimesModule } from './modules/downtimes/downtimes.module';
 import { AuthController } from './modules/auth/auth.controller';
 
 @Module({
@@ -16,6 +17,7 @@ import { AuthController } from './modules/auth/auth.controller';
     ChatModule,
     ProductionLinesModule,
     UsersModule,
+    DowntimesModule,
   ],
 })
 export class AppModule {}

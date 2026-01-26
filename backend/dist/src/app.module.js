@@ -14,6 +14,7 @@ const annotations_module_1 = require("./modules/annotations/annotations.module")
 const chat_module_1 = require("./modules/chat/chat.module");
 const production_lines_module_1 = require("./modules/production-lines/production-lines.module");
 const users_module_1 = require("./modules/users/users.module");
+const downtimes_module_1 = require("./modules/downtimes/downtimes.module");
 const auth_controller_1 = require("./modules/auth/auth.controller");
 let AppModule = class AppModule {
 };
@@ -28,6 +29,7 @@ exports.AppModule = AppModule = __decorate([
             chat_module_1.ChatModule,
             production_lines_module_1.ProductionLinesModule,
             users_module_1.UsersModule,
+            downtimes_module_1.DowntimesModule,
         ],
     })
 ], AppModule);

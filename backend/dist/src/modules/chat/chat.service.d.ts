@@ -5,8 +5,8 @@ export declare class ChatService {
     constructor(prisma: PrismaService);
     findByMachine(machineId: string, limit?: number): Promise<({
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -21,8 +21,8 @@ export declare class ChatService {
     })[]>;
     create(data: CreateMessageDto): Promise<{
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;

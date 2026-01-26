@@ -45,13 +45,14 @@ model User {
   id        String   @id @default(uuid())
   username  String   @unique
   name      String
-  password  String   
+  password  String
   role      UserRole @default(OPERATOR)
   createdAt DateTime @default(now())
   
   messages    ChatMessage[]
   annotations Annotation[]
   eventLogs   EventLog[]
+  downtimes   Downtime[]
 }
 
 model ProductionLine {
@@ -79,6 +80,7 @@ model Machine {
   annotations    Annotation[]
   messages       ChatMessage[]
   eventLogs      EventLog[]
+  downtimes      Downtime[]
 }
 
 model Annotation {
@@ -123,4 +125,21 @@ model EventLog {
   
   @@index([machineId, createdAt])
   @@index([eventType])
+}
+
+model Downtime {
+  id        String    @id @default(uuid())
+  machineId String
+  reason    String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?      // duração em minutos
+  notes     String?
+  userId    String
+  createdAt DateTime  @default(now())
+  
+  machine Machine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+  
+  @@index([machineId, startTime])
 }

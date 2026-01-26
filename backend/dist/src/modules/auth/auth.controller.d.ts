@@ -9,8 +9,8 @@ export declare class AuthController {
     login(loginDto: LoginDto): Promise<{
         success: boolean;
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             role: import(".prisma/client").$Enums.UserRole;

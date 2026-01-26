@@ -6,8 +6,8 @@ export declare class AnnotationsController {
     constructor(annotationsService: AnnotationsService);
     findByMachine(machineId: string): Promise<({
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -24,8 +24,8 @@ export declare class AnnotationsController {
     })[]>;
     create(createDto: CreateAnnotationDto): Promise<{
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;
@@ -42,8 +42,8 @@ export declare class AnnotationsController {
     }>;
     update(id: string, updateDto: UpdateAnnotationDto): Promise<{
         user: {
-            name: string;
             id: string;
+            name: string;
             createdAt: Date;
             username: string;
             password: string;

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Machine } from '../../types';
-import { useUserStore } from '../../store/userStore';
 
 interface Downtime {
   id: string;
@@ -30,7 +29,6 @@ const DOWNTIME_REASONS = [
 ];
 
 export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
-  const { currentUser } = useUserStore();
   const [downtimes, setDowntimes] = useState<Downtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -68,32 +66,22 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
       return;
     }
 
-    if (!currentUser) {
-      alert('❌ Erro: Utilizador não identificado. Por favor, faça login novamente.');
-      return;
-    }
-
     try {
-      const payload = {
-        machineId: machine.id,
-        reason,
-        startTime: new Date(startTime).toISOString(),
-        endTime: endTime ? new Date(endTime).toISOString() : undefined,
-        notes: notes || undefined,
-        userId: currentUser.id,
-      };
-
-      console.log('📤 Enviando paragem:', payload);
-
       const response = await fetch('http://localhost:3001/downtimes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          machineId: machine.id,
+          reason,
+          startTime: new Date(startTime).toISOString(),
+          endTime: endTime ? new Date(endTime).toISOString() : undefined,
+          notes,
+          userId: 'current-user-id', // TODO: Pegar do userStore
+        }),
       });
 
       if (response.ok) {
         const newDowntime = await response.json();
-        console.log('✅ Paragem criada:', newDowntime);
         setDowntimes([newDowntime, ...downtimes]);
         
         // Resetar form
@@ -104,14 +92,10 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
         setShowForm(false);
         
         alert('✅ Paragem registada com sucesso!');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro do servidor:', errorData);
-        alert(`❌ Erro ao registar paragem: ${errorData.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
-      console.error('❌ Erro ao registar paragem:', error);
-      alert('❌ Erro de conexão. Verifique se o backend está a funcionar.');
+      console.error('Erro ao registar paragem:', error);
+      alert('❌ Erro ao registar paragem');
     }
   };
 
@@ -141,24 +125,6 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Aviso se não tiver usuário logado */}
-      {!currentUser && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                <strong>Atenção:</strong> Nenhum utilizador selecionado. Selecione um utilizador na barra lateral para registar paragens.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between">
@@ -172,13 +138,7 @@ export const MachineDowntime = ({ machine }: MachineDowntimeProps) => {
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            disabled={!currentUser}
-            className={`px-6 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
-              currentUser 
-                ? 'bg-white text-red-700 hover:bg-red-50' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            title={!currentUser ? 'Selecione um utilizador primeiro' : ''}
+            className="px-6 py-3 bg-white text-red-700 font-semibold rounded-lg hover:bg-red-50 transition-colors shadow-lg"
           >
             {showForm ? '❌ Cancelar' : '➕ Nova Paragem'}
           </button>
