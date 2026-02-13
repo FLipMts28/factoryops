@@ -1,4 +1,3 @@
-// frontend/src/store/analyticsStore.ts
 import { create } from 'zustand';
 import { MachineMetrics, ProductionLineMetrics, TimeSeriesData } from '../types/analytics';
 import { generateMockMetrics } from '../utils/analytics';

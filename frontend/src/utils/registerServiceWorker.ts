@@ -73,13 +73,14 @@ export const clearServiceWorkerCache = async () => {
   
   if (registration.active) {
     const messageChannel = new MessageChannel();
+    const activeWorker = registration.active;
     
     return new Promise((resolve) => {
       messageChannel.port1.onmessage = (event) => {
         resolve(event.data.success);
       };
 
-      registration.active.postMessage(
+      activeWorker.postMessage(
         { type: 'CLEAR_CACHE' },
         [messageChannel.port2]
       );

@@ -21,27 +21,65 @@ let ChatGateway = class ChatGateway {
         this.chatService = chatService;
     }
     handleConnection(client) {
-        console.log(`💬 Chat client connected: ${client.id}`);
+        console.log(`💬 [WebSocket] Cliente conectado: ${client.id}`);
     }
     handleDisconnect(client) {
-        console.log(`💬 Chat client disconnected: ${client.id}`);
+        console.log(`💬 [WebSocket] Cliente desconectado: ${client.id}`);
     }
     async handleJoinChat(client, data) {
-        client.join(`chat:${data.machineId}`);
+        const room = `chat:${data.machineId}`;
+        client.join(room);
+        let roomSize = 0;
+        try {
+            const adapter = this.server?.sockets?.adapter;
+            if (adapter && adapter.rooms) {
+                roomSize = adapter.rooms.get(room)?.size || 0;
+            }
+        }
+        catch (error) {
+            console.warn('⚠️  Erro ao verificar tamanho da sala:', error.message);
+        }
+        console.log(`✅ [Chat] Cliente ${client.id} entrou na sala ${room}`);
+        console.log(`👥 [Chat] Total de clientes na sala: ${roomSize}`);
         const history = await this.chatService.findByMachine(data.machineId);
         client.emit('chatHistory', history.reverse());
-        console.log(`Client ${client.id} joined chat:${data.machineId}`);
+        console.log(`📜 [Chat] Histórico enviado para ${client.id}: ${history.length} mensagens`);
     }
     handleLeaveChat(client, machineId) {
-        client.leave(`chat:${machineId}`);
+        const room = `chat:${machineId}`;
+        client.leave(room);
+        console.log(`👋 [Chat] Cliente ${client.id} saiu da sala ${room}`);
     }
     async handleSendMessage(data) {
+        const room = `chat:${data.machineId}`;
+        console.log('📨 [Chat] Mensagem recebida:', {
+            machineId: data.machineId,
+            userId: data.userId,
+            content: data.content.substring(0, 50) + (data.content.length > 50 ? '...' : ''),
+        });
         const message = await this.chatService.create(data);
-        this.server.to(`chat:${data.machineId}`).emit('newMessage', message);
+        console.log('💾 [Chat] Mensagem salva no banco:', message.id);
+        let roomSize = 0;
+        try {
+            const adapter = this.server?.sockets?.adapter;
+            if (adapter && adapter.rooms) {
+                roomSize = adapter.rooms.get(room)?.size || 0;
+            }
+        }
+        catch (error) {
+            console.warn('⚠️  Erro ao verificar tamanho da sala:', error.message);
+            roomSize = -1;
+        }
+        console.log(`📤 [Chat] Broadcasting para sala "${room}" com ${roomSize === -1 ? '?' : roomSize} cliente(s)`);
+        this.server.to(room).emit('newMessage', message);
+        console.log('✅ [Chat] Broadcast enviado com sucesso!');
+        console.log('---');
         return message;
     }
     handleUserTyping(data) {
-        this.server.to(`chat:${data.machineId}`).emit('userTyping', data);
+        const room = `chat:${data.machineId}`;
+        console.log(`⌨️  [Chat] ${data.userName} está a escrever na sala ${room}`);
+        this.server.to(room).emit('userTyping', data);
     }
 };
 exports.ChatGateway = ChatGateway;

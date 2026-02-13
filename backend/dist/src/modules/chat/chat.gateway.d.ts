@@ -15,16 +15,16 @@ export declare class ChatGateway implements OnGatewayConnection, OnGatewayDiscon
     handleSendMessage(data: any): Promise<{
         user: {
             id: string;
-            name: string;
             createdAt: Date;
+            name: string;
             username: string;
             password: string;
             role: import(".prisma/client").$Enums.UserRole;
         };
     } & {
         id: string;
-        createdAt: Date;
         content: string;
+        createdAt: Date;
         machineId: string;
         userId: string;
     }>;
